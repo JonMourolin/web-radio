@@ -29,24 +29,30 @@ const AudioPlayer = () => {
     setCurrentTrackIndex((prev) => (prev + 1) % tracks.length);
   };
 
-  const currentTrack = tracks[currentTrackIndex] || '';
-  const trackName = currentTrack.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Aucune piste';
+  const currentTrack = tracks[currentTrackIndex];
+  const trackName = currentTrack?.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Aucune piste';
 
   return (
     <div className="w-full">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-800">{trackName}</h2>
       </div>
-      <div className="bg-white rounded-lg shadow">
-        <H5AudioPlayer
-          autoPlay={false}
-          src={currentTrack ? `/uploads/${currentTrack}` : ''}
-          showJumpControls={false}
-          layout="stacked"
-          onEnded={handleNextTrack}
-          className="rounded-lg"
-        />
-      </div>
+      {currentTrack ? (
+        <div className="bg-white rounded-lg shadow">
+          <H5AudioPlayer
+            autoPlay={false}
+            src={`/uploads/${currentTrack}`}
+            showJumpControls={false}
+            layout="stacked"
+            onEnded={handleNextTrack}
+            className="rounded-lg"
+          />
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow p-4 text-center text-gray-600">
+          Aucun fichier audio disponible. Veuillez en ajouter via l'interface d'administration.
+        </div>
+      )}
     </div>
   );
 };
