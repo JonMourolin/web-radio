@@ -4,6 +4,11 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.11] - 2024-03-16
+
+### Modifié
+- Suppression de la mention "Radio en direct" du footer pour un design plus épuré
+
 ## [0.2.10] - 2024-03-16
 
 ### Corrigé
@@ -164,23 +169,6 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Documentation de base
 - Structure du projet
 - Configuration Git/GitHub
-
-## [0.2.11] - 2024-03-16
-
-### Ajouté
-- Nouvelle interface utilisateur inspirée de Matrix avec image de fond
-- Police monospace Space Mono pour un style futuriste
-- Affichage des métadonnées sur une seule ligne (Artiste - Titre)
-
-### Modifié
-- Refonte complète du design avec bandes noires en haut et en bas
-- Simplification du contrôle de volume
-- Changement du nom en "jon sound library"
-- Bouton play/pause vert sans fond pour un look minimaliste
-
-### Corrigé
-- Correction définitive du bug d'attribut src vide dans l'élément audio
-- Optimisation du rendu conditionnel de l'élément audio
 
 ## [0.2.12] - 2024-03-16
 
