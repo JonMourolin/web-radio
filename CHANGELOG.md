@@ -101,4 +101,9 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Correction de l'affichage des pochettes d'albums
 - Standardisation de l'utilisation de `coverUrl` dans toute l'application
 - Correction des problèmes de propriétés dans les composants `Track` et `SimplePlayer`
-- Amélioration de la gestion des images dans le layout principal 
+- Amélioration de la gestion des images dans le layout principal
+
+## [0.2.5] - 2024-03-16
+
+### Corrigé
+- Correction du bug de l'attribut `src` vide dans le composant `MainLayout` 

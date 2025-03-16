@@ -147,12 +147,14 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       </main>
 
       {/* Hidden Audio Player */}
-      <audio
-        ref={audioRef}
-        src={currentTrack ? currentTrack.cloudinaryUrl : ''}
-        onEnded={handleTrackEnd}
-        hidden
-      />
+      {currentTrack && currentTrack.cloudinaryUrl && (
+        <audio
+          ref={audioRef}
+          src={currentTrack.cloudinaryUrl}
+          onEnded={handleTrackEnd}
+          hidden
+        />
+      )}
     </div>
   );
 } 
