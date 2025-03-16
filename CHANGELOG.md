@@ -81,4 +81,12 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Corrigé
 - Correction de l'erreur sur la route `/api/cover/[filename]`
-- Amélioration de la gestion des états d'upload 
+- Amélioration de la gestion des états d'upload
+
+## [0.2.3] - 2024-03-16
+
+### Corrigé
+- Correction de l'affichage des pochettes d'albums
+- Standardisation de l'utilisation de `coverUrl` dans toute l'application
+- Correction des problèmes de propriétés dans les composants `Track` et `SimplePlayer`
+- Amélioration de la gestion des images dans le layout principal 
