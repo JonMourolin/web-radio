@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Track } from '@/app/types/track';
+import Image from 'next/image';
 
 const SimplePlayer = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTracks = async () => {
@@ -19,6 +21,7 @@ const SimplePlayer = () => {
         }
       } catch (error) {
         console.error('Erreur lors du chargement des pistes:', error);
+        setError('Erreur lors du chargement des pistes');
       }
     };
 
@@ -51,7 +54,9 @@ const SimplePlayer = () => {
   if (!currentTrack) {
     return (
       <div className="bg-white rounded-lg shadow p-4 text-center text-gray-600">
-        Aucun fichier audio disponible. Veuillez en ajouter via l'interface d'administration.
+        <p className="text-sm text-gray-500">
+          {error ? "Erreur lors de la lecture" : "Aucun fichier n&apos;est en cours de lecture"}
+        </p>
       </div>
     );
   }
@@ -59,16 +64,18 @@ const SimplePlayer = () => {
   return (
     <div className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="relative aspect-square w-full">
-        <img
-          src={currentTrack.metadata.coverUrl}
-          alt={`Pochette de ${currentTrack.metadata.title}`}
+        <Image 
+          src={currentTrack.coverUrl || '/default-cover.jpg'} 
+          alt={`Pochette de ${currentTrack.title}`}
           className="w-full h-full object-cover"
+          width={500}
+          height={500}
         />
         <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
-          <h2 className="text-xl font-bold truncate">{currentTrack.metadata.title}</h2>
-          <p className="text-sm opacity-90 truncate">{currentTrack.metadata.artist}</p>
-          {currentTrack.metadata.album && (
-            <p className="text-sm opacity-75 truncate">{currentTrack.metadata.album}</p>
+          <h2 className="text-xl font-bold truncate">{currentTrack.title}</h2>
+          <p className="text-sm opacity-90 truncate">{currentTrack.artist}</p>
+          {currentTrack.album && (
+            <p className="text-sm opacity-75 truncate">{currentTrack.album}</p>
           )}
         </div>
       </div>
@@ -108,7 +115,7 @@ const SimplePlayer = () => {
 
         <audio
           ref={audioRef}
-          src={currentTrack.path}
+          src={currentTrack.cloudinaryUrl}
           onEnded={handleEnded}
           className="hidden"
         />

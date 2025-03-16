@@ -8,6 +8,16 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+interface Metadata {
+  title?: string;
+  artist?: string;
+  album?: string;
+  year?: string;
+  genre?: string;
+  coverUrl?: string;
+  [key: string]: string | undefined;
+}
+
 export async function GET() {
   try {
     const result = await cloudinary.search
@@ -15,7 +25,7 @@ export async function GET() {
       .with_field('context')
       .execute();
 
-    const metadata = result.resources.reduce((acc: any, resource: any) => {
+    const metadata = result.resources.reduce((acc: Record<string, any>, resource: any) => {
       acc[resource.public_id] = resource.context || {};
       return acc;
     }, {});
@@ -32,19 +42,25 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { trackId, metadata } = await request.json();
+    const { publicId, metadata }: { publicId: string, metadata: Metadata } = await request.json();
 
-    if (!trackId || !metadata) {
+    if (!publicId || !metadata) {
       return NextResponse.json(
-        { error: 'trackId and metadata are required' },
+        { error: 'publicId and metadata are required' },
         { status: 400 }
       );
     }
 
+    // Convert metadata object to Cloudinary context string format
+    const contextStr = Object.entries(metadata)
+      .filter(([_, value]) => value !== undefined)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('|');
+
     // Update the asset's context in Cloudinary
     await cloudinary.uploader.add_context(
-      metadata,
-      [trackId],
+      contextStr,
+      [publicId],
       { resource_type: 'video' } // Cloudinary uses 'video' type for audio files
     );
 

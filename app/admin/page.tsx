@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Track } from '@/app/types/track';
+import Image from 'next/image';
 
 interface DiscogsResult {
   id: number;
@@ -49,7 +50,7 @@ export default function AdminPage() {
     setUploadState({
       status: 'uploading',
       progress: 0,
-      message: 'Uploading file...'
+      message: 'Téléchargement en cours...'
     });
 
     const formData = new FormData();
@@ -267,19 +268,13 @@ export default function AdminPage() {
                     className="p-4 rounded-lg border border-gray-200 hover:border-purple-200 transition-all"
                   >
                     <div className="flex items-start gap-4">
-                      {track.coverPath ? (
-                        <img
-                          src={track.coverPath}
-                          alt={track.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-gray-400">
-                          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                          </svg>
-                        </div>
-                      )}
+                      <Image
+                        src={track.coverUrl || '/default-cover.jpg'}
+                        alt="Album cover"
+                        width={50}
+                        height={50}
+                        className="w-12 h-12 object-cover rounded"
+                      />
                       <div className="flex-grow">
                         <h3 className="font-medium text-gray-900">{track.title}</h3>
                         <p className="text-sm text-gray-600">{track.artist}</p>
@@ -339,13 +334,13 @@ export default function AdminPage() {
                     onClick={() => selectedFile && updateMetadata(files.find(f => f.filename === selectedFile)!, result)}
                   >
                     <div className="flex gap-4">
-                      {result.cover_image && (
-                        <img
-                          src={result.cover_image}
-                          alt={result.title}
-                          className="w-20 h-20 object-cover rounded"
-                        />
-                      )}
+                      <Image
+                        src={result.cover_image}
+                        alt={result.title}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                       <div>
                         <h4 className="font-medium text-gray-900">{result.title}</h4>
                         <p className="text-sm text-gray-600">{result.year}</p>

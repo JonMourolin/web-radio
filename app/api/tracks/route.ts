@@ -26,7 +26,7 @@ export async function GET() {
         artist: context.artist || 'Unknown Artist',
         album: context.album || 'Unknown Album',
         duration: context.duration || 0,
-        coverPath: context.coverUrl || '',
+        coverUrl: context.coverUrl || '',
         cloudinaryUrl: resource.secure_url,
         cloudinaryPublicId: resource.public_id,
       };

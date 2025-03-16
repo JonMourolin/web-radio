@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Track } from '@/app/types/track';
+import Image from 'next/image';
 
 interface MainLayoutProps {
   tracks: Track[];
@@ -117,11 +118,13 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
               {currentTrack ? (
                 <div>
                   <div className="aspect-square mb-4 bg-gray-800 rounded-lg overflow-hidden">
-                    {currentTrack.coverPath ? (
-                      <img
-                        src={`/api/cover/${encodeURIComponent(currentTrack.coverPath)}`}
+                    {currentTrack.coverUrl ? (
+                      <Image
+                        src={currentTrack.coverUrl}
                         alt="Album cover"
                         className="w-full h-full object-cover"
+                        width={500}
+                        height={500}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-500">

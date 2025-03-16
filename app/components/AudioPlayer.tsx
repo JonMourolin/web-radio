@@ -7,6 +7,7 @@ import 'react-h5-audio-player/lib/styles.css';
 const AudioPlayer = () => {
   const [tracks, setTracks] = useState<string[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Fonction pour charger la liste des fichiers
@@ -19,6 +20,7 @@ const AudioPlayer = () => {
         }
       } catch (error) {
         console.error('Erreur lors du chargement des pistes:', error);
+        setError('Erreur lors du chargement des pistes');
       }
     };
 
@@ -50,7 +52,9 @@ const AudioPlayer = () => {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow p-4 text-center text-gray-600">
-          Aucun fichier audio disponible. Veuillez en ajouter via l'interface d'administration.
+          <p className="text-sm text-gray-500">
+            {error ? "Erreur lors de la lecture" : "Aucun fichier n&apos;est en cours de lecture"}
+          </p>
         </div>
       )}
     </div>

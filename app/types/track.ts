@@ -12,7 +12,7 @@ export interface Track {
   title: string;
   artist: string;
   album: string;
-  coverPath: string;
+  coverUrl: string;
   duration: number;
   year?: string;
   genre?: string;
