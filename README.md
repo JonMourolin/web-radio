@@ -2,12 +2,13 @@
 
 A modern web radio application built with Next.js and React.
 
-**Version**: 0.2.7  
-**Documentation**: [Version 0.2.7](docs/VERSION_0.2.7.md)
+**Version**: 0.2.8  
+**Documentation**: [Version 0.2.8](docs/VERSION_0.2.8.md)
 
 ## Features
 
-- 🎵 Continuous random playback of audio tracks
+- 📻 True radio streaming experience with shared listening
+- 🎵 Continuous synchronized playback for all listeners
 - 🎨 Matrix-inspired user interface
 - 🎧 Simple audio controls with volume adjustment
 - 🖼️ Album cover display
@@ -19,6 +20,7 @@ A modern web radio application built with Next.js and React.
 - 📊 Upload progress tracking
 - 🔍 Discogs integration for metadata
 - 🔤 Monospace typography for futuristic look
+- 📋 Coming up next preview section
 
 ## Installation
 

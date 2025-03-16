@@ -8,48 +8,86 @@ interface MainLayoutProps {
   tracks: Track[];
 }
 
+interface RadioState {
+  currentTrack: Track | null;
+  position: number;
+  isPlaying: boolean;
+  nextTracks: Track[];
+  remainingTime: number;
+}
+
 export default function MainLayout({ tracks }: MainLayoutProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
-  const [shuffledTracks, setShuffledTracks] = useState<Track[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [radioState, setRadioState] = useState<RadioState | null>(null);
+  const [lastTrackId, setLastTrackId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   
-  // Get current track
-  const currentTrack = shuffledTracks[currentIndex];
+  // Get current track from radio state
+  const currentTrack = radioState?.currentTrack || null;
 
-  // Function to shuffle array randomly
-  const shuffleArray = (array: Track[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  // Format remaining time as MM:SS
+  const formatTime = (seconds: number) => {
+    if (!seconds) return '00:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Initialize shuffled tracks
-  useEffect(() => {
-    if (tracks.length > 0) {
-      const shuffled = shuffleArray(tracks);
-      setShuffledTracks(shuffled);
+  // Fetch radio state from server
+  const fetchRadioState = async () => {
+    try {
+      const response = await fetch('/api/stream');
+      if (!response.ok) throw new Error('Failed to fetch radio state');
+      const data = await response.json();
+      
+      // Vérifier si la piste a changé
+      const newTrackId = data.currentTrack?.cloudinaryPublicId;
+      const trackChanged = newTrackId !== lastTrackId;
+      
+      if (trackChanged && newTrackId) {
+        setLastTrackId(newTrackId);
+        // Forcer le rechargement de l'audio si la piste a changé
+        if (audioRef.current) {
+          audioRef.current.load();
+        }
+      }
+      
+      setRadioState(data);
+      setIsPlaying(data.isPlaying);
+    } catch (error) {
+      console.error('Error fetching radio state:', error);
     }
-  }, [tracks]);
+  };
 
-  // Handle track end and play next track
-  const handleTrackEnd = () => {
-    if (shuffledTracks.length === 0) return;
+  // Initialize and periodically update radio state
+  useEffect(() => {
+    // Initial fetch
+    fetchRadioState();
     
-    const nextIndex = (currentIndex + 1) % shuffledTracks.length;
-    setCurrentIndex(nextIndex);
-  };
+    // Set up polling interval (every 10 seconds)
+    const intervalId = setInterval(fetchRadioState, 10000);
+    
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
-  // Effect to handle audio playback when currentIndex changes
+  // Effect to handle audio playback when radio state changes
   useEffect(() => {
-    if (audioRef.current && isPlaying && currentTrack?.cloudinaryUrl) {
-      audioRef.current.play().catch(console.error);
+    if (!audioRef.current || !radioState || !currentTrack) return;
+    
+    // Set the current time to match the server's position
+    if (Math.abs(audioRef.current.currentTime - radioState.position) > 2) {
+      audioRef.current.currentTime = radioState.position;
     }
-  }, [currentIndex, currentTrack, isPlaying]);
+    
+    // Play or pause based on radio state
+    if (radioState.isPlaying && audioRef.current.paused) {
+      audioRef.current.play().catch(console.error);
+    } else if (!radioState.isPlaying && !audioRef.current.paused) {
+      audioRef.current.pause();
+    }
+  }, [radioState, currentTrack]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -117,6 +155,11 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
                 <p className="truncate max-w-[200px]">
                   <span className="font-bold">{currentTrack.artist}</span> - {currentTrack.title}
                 </p>
+                {radioState?.remainingTime && (
+                  <p className="text-xs text-[#008F11]/70">
+                    Reste: {formatTime(radioState.remainingTime)}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -152,11 +195,26 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
             />
           </div>
         </div>
+        
+        {/* Coming up next section */}
+        {radioState?.nextTracks && radioState.nextTracks.length > 0 && (
+          <div className="absolute bottom-4 right-4 bg-black/80 p-3 rounded-md border border-[#008F11]/30 max-w-xs">
+            <h3 className="text-[#008F11] text-sm mb-2 font-doto">À suivre :</h3>
+            <ul className="space-y-1">
+              {radioState.nextTracks.map((track, index) => (
+                <li key={index} className="text-white/80 text-xs flex items-center">
+                  <span className="w-3 text-[#008F11]/60 mr-1">{index + 1}.</span>
+                  <span className="truncate">{track.artist} - {track.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </main>
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.6</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.8 - Radio en direct</p>
       </footer>
 
       {/* Hidden Audio Player */}
@@ -164,7 +222,6 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
         <audio
           ref={audioRef}
           src={currentTrack.cloudinaryUrl}
-          onEnded={handleTrackEnd}
           hidden
         />
       ) : null}

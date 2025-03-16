@@ -1,27 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import MainLayout from './components/MainLayout';
 import { Track } from './types/track';
 
 export default function Home() {
-  const [tracks, setTracks] = useState<Track[]>([]);
-
-  useEffect(() => {
-    const loadTracks = async () => {
-      try {
-        const response = await fetch('/api/tracks');
-        const data = await response.json();
-        if (data.tracks && data.tracks.length > 0) {
-          setTracks(data.tracks);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des pistes:', error);
-      }
-    };
-
-    loadTracks();
-  }, []);
-
-  return <MainLayout tracks={tracks} />;
+  // La page principale n'a plus besoin de charger les pistes
+  // car le composant MainLayout récupère directement l'état de la radio
+  // depuis l'API /api/stream
+  return <MainLayout tracks={[]} />;
 }

@@ -130,4 +130,17 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Corrigé
 - Correction définitive du bug d'attribut src vide dans l'élément audio
-- Optimisation du rendu conditionnel de l'élément audio 
+- Optimisation du rendu conditionnel de l'élément audio
+
+## [0.2.8] - 2024-03-16
+
+### Ajouté
+- Transformation en véritable radio avec flux continu
+- Synchronisation du lecteur avec l'état global du serveur
+- Affichage des prochains morceaux à venir
+- Expérience d'écoute partagée pour tous les utilisateurs
+
+### Modifié
+- Architecture repensée avec un état global côté serveur
+- Lecture audio synchronisée avec le serveur
+- Interface mise à jour pour refléter l'expérience radio 
