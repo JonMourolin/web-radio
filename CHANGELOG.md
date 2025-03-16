@@ -4,6 +4,18 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2024-03-16
+
+### Modifié
+- Migration complète de la route `/api/cover/[filename]` vers Cloudinary
+- Suppression de l'accès aux fichiers locaux pour les pochettes
+- Redirection directe vers les URLs Cloudinary pour les images
+
+### Corrigé
+- Correction des erreurs 404 sur les pochettes d'albums
+- Amélioration de la gestion des erreurs pour les images manquantes
+- Optimisation des performances de chargement des images
+
 ## [0.2.1] - 2024-03-16
 
 ### Ajouté
