@@ -2,8 +2,8 @@
 
 A modern web radio application built with Next.js and React.
 
-**Version**: 0.2.8  
-**Documentation**: [Version 0.2.8](docs/VERSION_0.2.8.md)
+**Version**: 0.2.10  
+**Documentation**: [Version 0.2.10](docs/VERSION_0.2.10.md)
 
 ## Features
 
@@ -21,6 +21,8 @@ A modern web radio application built with Next.js and React.
 - 🔍 Discogs integration for metadata
 - 🔤 Monospace typography for futuristic look
 - 📋 Coming up next preview section
+- ⏱️ Remaining time display
+- 🔇 Persistent pause state
 
 ## Installation
 

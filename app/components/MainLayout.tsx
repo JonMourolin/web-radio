@@ -21,7 +21,9 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
   const [volume, setVolume] = useState(1);
   const [radioState, setRadioState] = useState<RadioState | null>(null);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
+  const [localPause, setLocalPause] = useState(false); // État de pause local
   const audioRef = useRef<HTMLAudioElement>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   
   // Get current track from radio state
   const currentTrack = radioState?.currentTrack || null;
@@ -43,18 +45,39 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       
       // Vérifier si la piste a changé
       const newTrackId = data.currentTrack?.cloudinaryPublicId;
-      const trackChanged = newTrackId !== lastTrackId;
+      const trackChanged = newTrackId !== lastTrackId && lastTrackId !== null;
       
       if (trackChanged && newTrackId) {
+        console.log('Track changed, loading new track');
         setLastTrackId(newTrackId);
-        // Forcer le rechargement de l'audio si la piste a changé
+        
+        // Seulement si la piste a changé, on met à jour l'audio
         if (audioRef.current) {
-          audioRef.current.load();
+          const wasPlaying = !audioRef.current.paused && !localPause;
+          audioRef.current.src = data.currentTrack.cloudinaryUrl;
+          audioRef.current.currentTime = data.position;
+          
+          if (wasPlaying) {
+            audioRef.current.play().catch(console.error);
+          }
+        }
+      } else if (lastTrackId === null && newTrackId) {
+        // Premier chargement
+        setLastTrackId(newTrackId);
+      } else {
+        // Même piste, on ajuste juste la position si nécessaire
+        if (audioRef.current && Math.abs(audioRef.current.currentTime - data.position) > 5) {
+          // Seulement si le décalage est important (> 5 secondes)
+          audioRef.current.currentTime = data.position;
         }
       }
       
       setRadioState(data);
-      setIsPlaying(data.isPlaying);
+      
+      // Ne pas modifier l'état de lecture si l'utilisateur a mis en pause manuellement
+      if (!localPause) {
+        setIsPlaying(data.isPlaying);
+      }
     } catch (error) {
       console.error('Error fetching radio state:', error);
     }
@@ -66,35 +89,42 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
     fetchRadioState();
     
     // Set up polling interval (every 10 seconds)
-    const intervalId = setInterval(fetchRadioState, 10000);
+    pollingRef.current = setInterval(fetchRadioState, 10000);
     
     // Clean up on unmount
-    return () => clearInterval(intervalId);
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
   }, []);
 
   // Effect to handle audio playback when radio state changes
   useEffect(() => {
     if (!audioRef.current || !radioState || !currentTrack) return;
     
-    // Set the current time to match the server's position
-    if (Math.abs(audioRef.current.currentTime - radioState.position) > 2) {
-      audioRef.current.currentTime = radioState.position;
-    }
-    
-    // Play or pause based on radio state
-    if (radioState.isPlaying && audioRef.current.paused) {
+    // Play or pause based on radio state and local pause state
+    if (isPlaying && !localPause && audioRef.current.paused) {
       audioRef.current.play().catch(console.error);
-    } else if (!radioState.isPlaying && !audioRef.current.paused) {
+    } else if ((!isPlaying || localPause) && !audioRef.current.paused) {
       audioRef.current.pause();
     }
-  }, [radioState, currentTrack]);
+  }, [radioState, currentTrack, isPlaying, localPause]);
+
+  // Handle track end
+  const handleTrackEnd = () => {
+    // Quand une piste se termine, on force une mise à jour immédiate
+    fetchRadioState();
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setLocalPause(true); // Activer la pause locale
       } else {
         audioRef.current.play().catch(console.error);
+        setLocalPause(false); // Désactiver la pause locale
       }
       setIsPlaying(!isPlaying);
     }
@@ -214,7 +244,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.8 - Radio en direct</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.10 - Radio en direct</p>
       </footer>
 
       {/* Hidden Audio Player */}
@@ -222,6 +252,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
         <audio
           ref={audioRef}
           src={currentTrack.cloudinaryUrl}
+          onEnded={handleTrackEnd}
           hidden
         />
       ) : null}

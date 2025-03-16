@@ -17,6 +17,8 @@ class RadioState {
   private trackStartTime: number = Date.now();
   private isPlaying: boolean = true;
   private defaultTrackDuration: number = 180; // 3 minutes par défaut en secondes
+  private lastCheckTime: number = Date.now();
+  private transitionInProgress: boolean = false;
 
   private constructor() {
     // Initialiser la playlist vide
@@ -26,7 +28,8 @@ class RadioState {
     setInterval(() => this.refreshPlaylist(), 6 * 60 * 60 * 1000);
     
     // Vérifier et passer à la piste suivante si nécessaire
-    setInterval(() => this.checkAndAdvanceTrack(), 10000); // Vérifier toutes les 10 secondes
+    // Vérification plus fréquente pour une meilleure précision
+    setInterval(() => this.checkAndAdvanceTrack(), 5000);
   }
 
   public static getInstance(): RadioState {
@@ -71,28 +74,37 @@ class RadioState {
         };
       });
 
-      // Mélanger la playlist seulement si elle est vide ou a changé significativement
+      // Si la playlist est vide, initialiser avec les nouvelles pistes
       if (this.playlist.length === 0) {
         this.playlist = this.shuffleArray(tracks);
         this.currentTrackIndex = 0;
         this.trackStartTime = Date.now();
-      } else {
-        // Préserver la piste actuelle et sa position
-        const currentTrack = this.playlist[this.currentTrackIndex];
-        this.playlist = this.shuffleArray(tracks);
-        
-        // Essayer de trouver la piste actuelle dans la nouvelle playlist
-        const newIndex = this.playlist.findIndex(
-          track => track.cloudinaryPublicId === currentTrack.cloudinaryPublicId
-        );
-        
-        if (newIndex >= 0) {
-          this.currentTrackIndex = newIndex;
-        } else {
-          this.currentTrackIndex = 0;
-          this.trackStartTime = Date.now();
-        }
+        console.log('Playlist initialisée avec', this.playlist.length, 'pistes');
+        return;
       }
+      
+      // Sinon, préserver la piste actuelle et sa position
+      const currentTrack = this.playlist[this.currentTrackIndex];
+      const elapsedTime = Date.now() - this.trackStartTime;
+      
+      // Mettre à jour la playlist en préservant l'ordre actuel
+      this.playlist = this.shuffleArray(tracks);
+      
+      // Essayer de trouver la piste actuelle dans la nouvelle playlist
+      const newIndex = this.playlist.findIndex(
+        track => track.cloudinaryPublicId === currentTrack.cloudinaryPublicId
+      );
+      
+      if (newIndex >= 0) {
+        // Garder la même piste et la même position
+        this.currentTrackIndex = newIndex;
+      } else {
+        // Si la piste n'existe plus, commencer une nouvelle
+        this.currentTrackIndex = 0;
+        this.trackStartTime = Date.now();
+      }
+      
+      console.log('Playlist rafraîchie avec', this.playlist.length, 'pistes');
     } catch (error) {
       console.error('Error refreshing playlist:', error);
     }
@@ -108,6 +120,13 @@ class RadioState {
   }
 
   private checkAndAdvanceTrack() {
+    // Éviter les vérifications trop fréquentes ou pendant une transition
+    const now = Date.now();
+    if (now - this.lastCheckTime < 2000 || this.transitionInProgress) {
+      return;
+    }
+    this.lastCheckTime = now;
+    
     if (this.playlist.length === 0) return;
     
     const currentTrack = this.playlist[this.currentTrackIndex];
@@ -115,14 +134,22 @@ class RadioState {
     
     // Utiliser la durée de la piste ou la durée par défaut
     const trackDuration = (currentTrack.duration || this.defaultTrackDuration) * 1000; // Convertir en millisecondes
-    const elapsedTime = Date.now() - this.trackStartTime;
+    const elapsedTime = now - this.trackStartTime;
     
     // Si la piste actuelle est terminée, passer à la suivante
     if (elapsedTime >= trackDuration) {
-      console.log(`Track ${currentTrack.title} finished after ${elapsedTime/1000}s. Duration was ${trackDuration/1000}s`);
-      this.currentTrackIndex = (this.currentTrackIndex + 1) % this.playlist.length;
-      this.trackStartTime = Date.now();
-      console.log(`Now playing: ${this.playlist[this.currentTrackIndex].title}`);
+      this.transitionInProgress = true;
+      
+      try {
+        console.log(`Track ${currentTrack.title} finished after ${elapsedTime/1000}s. Duration was ${trackDuration/1000}s`);
+        this.currentTrackIndex = (this.currentTrackIndex + 1) % this.playlist.length;
+        this.trackStartTime = now;
+        
+        const nextTrack = this.playlist[this.currentTrackIndex];
+        console.log(`Now playing: ${nextTrack.title} by ${nextTrack.artist}`);
+      } finally {
+        this.transitionInProgress = false;
+      }
     }
   }
 
@@ -132,7 +159,16 @@ class RadioState {
   }
 
   public getPlaybackInfo() {
-    if (this.playlist.length === 0) return { currentTrack: null, position: 0, isPlaying: false, nextTracks: [] };
+    if (this.playlist.length === 0) {
+      return { 
+        currentTrack: null, 
+        position: 0, 
+        isPlaying: false, 
+        nextTracks: [],
+        remainingTime: 0,
+        trackChanged: false
+      };
+    }
     
     const currentTrack = this.playlist[this.currentTrackIndex];
     const elapsedTime = Date.now() - this.trackStartTime;
@@ -144,7 +180,8 @@ class RadioState {
       position,
       isPlaying: this.isPlaying,
       nextTracks: this.getNextTracks(3),
-      remainingTime: Math.max(0, (trackDuration - elapsedTime) / 1000) // Temps restant en secondes
+      remainingTime: Math.max(0, (trackDuration - elapsedTime) / 1000), // Temps restant en secondes
+      trackStartTime: this.trackStartTime // Ajouter le timestamp de début pour une meilleure synchronisation
     };
   }
 
