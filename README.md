@@ -2,10 +2,18 @@
 
 Application de web radio minimaliste permettant la diffusion de fichiers audio via un player HTML5.
 
-## Version Actuelle : 0.0.2
+## Version Actuelle : 0.1.0
 
-[Documentation détaillée de la version courante](docs/VERSION_0.0.2.md)
+[Documentation détaillée de la version courante](docs/VERSION_0.1.0.md)
 [Journal des modifications](CHANGELOG.md)
+
+## Fonctionnalités
+
+- Player audio minimaliste (play/pause, volume)
+- Affichage des métadonnées (titre, artiste, album)
+- Support des pochettes d'albums
+- Interface d'upload de fichiers
+- Lecture automatique de la playlist
 
 ## Installation
 
@@ -32,6 +40,7 @@ npm start
 - `/app` : Code source de l'application
 - `/public/uploads` : Stockage des fichiers audio
 - `/docs` : Documentation technique
+- `/public/images` : Assets statiques
 
 ## Technologies
 
@@ -39,6 +48,7 @@ npm start
 - React
 - TypeScript
 - Tailwind CSS
+- music-metadata
 
 ## Licence
 

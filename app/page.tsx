@@ -1,4 +1,4 @@
-import AudioPlayer from './components/AudioPlayer'
+import SimplePlayer from './components/SimplePlayer'
 
 export default function Home() {
   return (
@@ -9,9 +9,7 @@ export default function Home() {
           <p className="text-gray-600">Votre radio en ligne</p>
         </header>
         
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-          <AudioPlayer />
-        </div>
+        <SimplePlayer />
       </div>
     </main>
   )

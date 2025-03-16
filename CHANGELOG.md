@@ -4,6 +4,19 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2024-03-16
+
+### Ajouté
+- Nouveau player audio simplifié avec contrôles essentiels
+- Affichage des métadonnées des morceaux (titre, artiste, album)
+- Support des pochettes d'albums
+- API pour la gestion des métadonnées
+- API pour servir les pochettes d'albums
+
+### Modifié
+- Interface utilisateur simplifiée et plus moderne
+- Suppression des contrôles de navigation dans le morceau
+
 ## [0.0.2] - 2024-03-16
 
 ### Corrigé
