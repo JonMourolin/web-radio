@@ -4,6 +4,13 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2024-03-16
+
+### Ajouté
+- Enrichissement automatique des métadonnées lors de l'upload
+- Utilisation automatique du premier résultat Discogs
+- Conservation de la possibilité d'enrichissement manuel
+
 ## [0.2.0] - 2024-03-16
 
 ### Ajouté

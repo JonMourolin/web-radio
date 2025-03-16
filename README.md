@@ -2,9 +2,9 @@
 
 Application de web radio minimaliste permettant la diffusion de fichiers audio via un player HTML5.
 
-## Version Actuelle : 0.2.0
+## Version Actuelle : 0.2.1
 
-[Documentation détaillée de la version courante](docs/VERSION_0.2.0.md)
+[Documentation détaillée de la version courante](docs/VERSION_0.2.1.md)
 [Journal des modifications](CHANGELOG.md)
 
 ## Fonctionnalités
@@ -14,7 +14,8 @@ Application de web radio minimaliste permettant la diffusion de fichiers audio v
 - Support des pochettes d'albums
 - Interface d'upload de fichiers
 - Lecture automatique de la playlist
-- Enrichissement des métadonnées via Discogs
+- Enrichissement automatique des métadonnées via Discogs
+- Possibilité d'enrichissement manuel
 - Mise à jour automatique des tags ID3
 
 ## Installation
@@ -39,8 +40,8 @@ npm start
 ## Utilisation
 
 1. Accédez à l'interface d'administration : http://localhost:3000/admin
-2. Uploadez vos fichiers audio
-3. Enrichissez les métadonnées via Discogs
+2. Uploadez vos fichiers audio (enrichissement automatique via Discogs)
+3. Modifiez manuellement les métadonnées si nécessaire
 4. Écoutez votre web radio : http://localhost:3000
 
 ## Structure des Dossiers
