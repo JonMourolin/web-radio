@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server';
-import path from 'path';
-import { promises as fs } from 'fs';
-const { readFile } = fs;
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configuration de Cloudinary
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET(
   request: NextRequest,
@@ -11,22 +16,22 @@ export async function GET(
     // Attendre que params soit disponible
     const filename = await Promise.resolve(decodeURIComponent(params.filename));
     
-    // Construire le chemin du fichier
-    const filePath = path.join(process.cwd(), 'public', 'uploads', filename);
-    
     try {
-      // Lire le fichier
-      const buffer = await readFile(filePath);
-      
-      // Retourner l'image avec le bon type MIME
-      return new Response(buffer, {
-        headers: {
-          'Content-Type': 'image/jpeg', // Ajuster selon le type d'image
-          'Cache-Control': 'public, max-age=31536000',
-        },
-      });
+      // Rechercher l'asset sur Cloudinary
+      const result = await cloudinary.search
+        .expression(`filename:${filename}`)
+        .execute();
+
+      if (result.total_count > 0) {
+        // Rediriger vers l'URL Cloudinary
+        const url = result.resources[0].secure_url;
+        return Response.redirect(url);
+      }
+
+      // Si l'image n'est pas trouvée sur Cloudinary
+      return new Response('Image not found', { status: 404 });
     } catch (error) {
-      // Si le fichier n'existe pas, retourner une erreur 404
+      console.error('Cloudinary error:', error);
       return new Response('Image not found', { status: 404 });
     }
   } catch (error) {
