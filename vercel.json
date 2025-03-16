@@ -7,6 +7,11 @@
     }
   ],
   "env": {
-    "UPLOAD_DIR": "public/uploads"
+    "UPLOAD_DIR": "public/uploads",
+    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
+    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
+    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
+    "DISCOGS_CONSUMER_KEY": "@discogs_consumer_key",
+    "DISCOGS_CONSUMER_SECRET": "@discogs_consumer_secret"
   }
 } 
