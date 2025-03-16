@@ -71,28 +71,61 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-purple-900">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-black/30 backdrop-blur-sm z-50">
-        <div className="container mx-auto h-full px-4 flex items-center justify-between">
+    <div className="flex flex-col h-screen bg-black">
+      {/* Header - Black band on top */}
+      <header className="h-20 bg-black text-white flex items-center px-6 z-50">
+        <div className="flex items-center">
           <button
             onClick={togglePlay}
-            className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center text-white"
+            className="flex items-center justify-center mr-4"
           >
             {isPlaying ? (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6" />
+              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
             ) : (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
+                <path d="M8 5v14l11-7z" />
               </svg>
             )}
           </button>
 
-          <h1 className="text-2xl font-bold text-white">JON RADIO</h1>
+          <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
+        </div>
 
-          <div className="w-32">
+        {/* Current track info in header - push to right */}
+        <div className="flex items-center space-x-4 ml-auto">
+          {currentTrack && (
+            <>
+              <div className="w-12 h-12 bg-gray-800 rounded overflow-hidden">
+                {currentTrack.coverUrl ? (
+                  <Image
+                    src={currentTrack.coverUrl}
+                    alt="Album cover"
+                    className="w-full h-full object-cover"
+                    width={48}
+                    height={48}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                    No Cover
+                  </div>
+                )}
+              </div>
+              <div className="text-white text-sm">
+                <p className="truncate max-w-[200px]">
+                  <span className="font-bold">{currentTrack.artist}</span> - {currentTrack.title}
+                </p>
+              </div>
+            </>
+          )}
+          
+          {/* Volume Control */}
+          <div className="flex items-center ml-4 space-x-2">
+            <svg className="w-5 h-5 text-[#008F11]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3z" />
+            </svg>
             <input
               type="range"
               min="0"
@@ -100,63 +133,41 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
               step="0.01"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-full"
+              className="w-16 h-1 appearance-none bg-gray-700 rounded-full outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#008F11]"
             />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="pt-20 container mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Left Section */}
-          <div className="md:col-span-2 bg-white/10 backdrop-blur-sm rounded-lg p-6">
-            <p className="text-white/80">
-              Welcome to Jon Radio - Your Personal Music Stream
-            </p>
-          </div>
-
-          {/* Right Section - Player */}
-          <div className="md:col-span-1">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              {currentTrack ? (
-                <div>
-                  <div className="aspect-square mb-4 bg-gray-800 rounded-lg overflow-hidden">
-                    {currentTrack.coverUrl ? (
-                      <Image
-                        src={currentTrack.coverUrl}
-                        alt="Album cover"
-                        className="w-full h-full object-cover"
-                        width={500}
-                        height={500}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        No Cover
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-white">
-                    <h2 className="text-xl font-bold mb-2">{currentTrack.title}</h2>
-                    <p className="text-white/80">{currentTrack.artist}</p>
-                    <p className="text-white/60">{currentTrack.album}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-white/60">No track loaded</div>
-              )}
-            </div>
+      {/* Main Content - Matrix Image */}
+      <main className="flex-grow relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-[95%] h-[95%] relative">
+            <Image
+              src="https://res.cloudinary.com/dyom5zfbh/image/upload/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg"
+              alt="Matrix Neo"
+              className="object-contain"
+              fill
+              priority
+            />
           </div>
         </div>
       </main>
 
+      {/* Footer - Black band on bottom */}
+      <footer className="h-16 bg-black text-white flex items-center justify-center">
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.6</p>
+      </footer>
+
       {/* Hidden Audio Player */}
-      <audio
-        ref={audioRef}
-        src={currentTrack?.cloudinaryUrl || ''}
-        onEnded={handleTrackEnd}
-        hidden
-      />
+      {currentTrack?.cloudinaryUrl ? (
+        <audio
+          ref={audioRef}
+          src={currentTrack.cloudinaryUrl}
+          onEnded={handleTrackEnd}
+          hidden
+        />
+      ) : null}
     </div>
   );
 } 

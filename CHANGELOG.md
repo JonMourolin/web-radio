@@ -113,4 +113,21 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Corrigé
 - Correction de l'enchaînement automatique des morceaux
 - Amélioration de la gestion de l'élément audio pour assurer la lecture continue
-- Optimisation du cycle de vie des composants audio 
+- Optimisation du cycle de vie des composants audio
+
+## [0.2.7] - 2024-03-16
+
+### Ajouté
+- Nouvelle interface utilisateur inspirée de Matrix avec image de fond
+- Police monospace Space Mono pour un style futuriste
+- Affichage des métadonnées sur une seule ligne (Artiste - Titre)
+
+### Modifié
+- Refonte complète du design avec bandes noires en haut et en bas
+- Simplification du contrôle de volume
+- Changement du nom en "jon sound library"
+- Bouton play/pause vert sans fond pour un look minimaliste
+
+### Corrigé
+- Correction définitive du bug d'attribut src vide dans l'élément audio
+- Optimisation du rendu conditionnel de l'élément audio 
