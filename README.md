@@ -2,9 +2,9 @@
 
 Application de web radio minimaliste permettant la diffusion de fichiers audio via un player HTML5.
 
-## Version Actuelle : 0.1.0
+## Version Actuelle : 0.2.0
 
-[Documentation détaillée de la version courante](docs/VERSION_0.1.0.md)
+[Documentation détaillée de la version courante](docs/VERSION_0.2.0.md)
 [Journal des modifications](CHANGELOG.md)
 
 ## Fonctionnalités
@@ -14,12 +14,19 @@ Application de web radio minimaliste permettant la diffusion de fichiers audio v
 - Support des pochettes d'albums
 - Interface d'upload de fichiers
 - Lecture automatique de la playlist
+- Enrichissement des métadonnées via Discogs
+- Mise à jour automatique des tags ID3
 
 ## Installation
 
 ```bash
 # Installation des dépendances
 npm install
+
+# Configuration
+# Créez un fichier .env.local avec vos clés Discogs :
+DISCOGS_CONSUMER_KEY=votre_consumer_key
+DISCOGS_CONSUMER_SECRET=votre_consumer_secret
 
 # Lancement en développement
 npm run dev
@@ -33,7 +40,8 @@ npm start
 
 1. Accédez à l'interface d'administration : http://localhost:3000/admin
 2. Uploadez vos fichiers audio
-3. Écoutez votre web radio : http://localhost:3000
+3. Enrichissez les métadonnées via Discogs
+4. Écoutez votre web radio : http://localhost:3000
 
 ## Structure des Dossiers
 
@@ -49,6 +57,8 @@ npm start
 - TypeScript
 - Tailwind CSS
 - music-metadata
+- node-id3
+- disconnect (API Discogs)
 
 ## Licence
 

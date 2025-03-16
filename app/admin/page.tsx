@@ -1,24 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import MetadataEnricher from '@/app/components/MetadataEnricher';
+import { TrackMetadata } from '@/app/types/track';
 
 export default function AdminPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const router = useRouter();
+  const [files, setFiles] = useState<{ filename: string; metadata: TrackMetadata }[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+  const loadFiles = async () => {
+    try {
+      const response = await fetch('/api/tracks');
+      const data = await response.json();
+      setFiles(data.tracks.map((track: any) => ({
+        filename: track.metadata.filename,
+        metadata: track.metadata
+      })));
+    } catch (error) {
+      console.error('Erreur lors du chargement des fichiers:', error);
     }
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    loadFiles();
+  }, []);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
 
@@ -28,55 +40,67 @@ export default function AdminPage() {
         body: formData,
       });
 
-      if (response.ok) {
-        alert('Fichier uploadé avec succès !');
-        setFile(null);
-      } else {
+      if (!response.ok) {
         throw new Error('Erreur lors de l\'upload');
       }
+
+      loadFiles();
     } catch (error) {
-      console.error('Erreur:', error);
-      alert('Erreur lors de l\'upload du fichier');
+      console.error('Erreur lors de l\'upload:', error);
     } finally {
-      setUploading(false);
+      setIsUploading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold mb-6">Administration</h1>
-          
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                accept="audio/*"
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer text-blue-600 hover:text-blue-800"
-              >
-                {file ? file.name : 'Cliquez pour sélectionner un fichier audio'}
-              </label>
-            </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Administration</h1>
 
-            <button
-              type="submit"
-              disabled={!file || uploading}
-              className={`w-full py-2 px-4 rounded-lg text-white ${
-                !file || uploading
-                  ? 'bg-gray-400'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-            >
-              {uploading ? 'Upload en cours...' : 'Uploader'}
-            </button>
-          </form>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <div className="bg-white rounded-lg shadow p-4 mb-8">
+            <h2 className="text-xl font-semibold mb-4">Upload de fichiers</h2>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <h2 className="text-xl font-semibold mb-4">Fichiers disponibles</h2>
+            <div className="space-y-2">
+              {files.map(({ filename, metadata }) => (
+                <div
+                  key={filename}
+                  className={`p-3 rounded border cursor-pointer ${
+                    selectedFile === filename ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedFile(filename)}
+                >
+                  <h3 className="font-medium">{metadata.title}</h3>
+                  <p className="text-sm text-gray-600">{metadata.artist}</p>
+                  {metadata.album && (
+                    <p className="text-sm text-gray-500">{metadata.album}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {selectedFile && (
+            <MetadataEnricher
+              filename={selectedFile}
+              onEnrichmentComplete={() => {
+                loadFiles();
+                setSelectedFile(null);
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

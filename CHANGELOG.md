@@ -4,6 +4,15 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2024-03-16
+
+### Ajouté
+- Enrichissement automatique des métadonnées via Discogs
+- Interface de recherche et sélection des métadonnées
+- Mise à jour automatique des tags ID3
+- Support des pochettes d'albums depuis Discogs
+- Configuration de l'API Discogs
+
 ## [0.1.0] - 2024-03-16
 
 ### Ajouté
