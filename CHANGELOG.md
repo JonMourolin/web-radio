@@ -106,4 +106,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.2.5] - 2024-03-16
 
 ### Corrigé
-- Correction du bug de l'attribut `src` vide dans le composant `MainLayout` 
+- Correction du bug de l'attribut `src` vide dans le composant `MainLayout`
+
+## [0.2.6] - 2024-03-16
+
+### Corrigé
+- Correction de l'enchaînement automatique des morceaux
+- Amélioration de la gestion de l'élément audio pour assurer la lecture continue
+- Optimisation du cycle de vie des composants audio 

@@ -14,6 +14,9 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
   const [shuffledTracks, setShuffledTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Get current track
+  const currentTrack = shuffledTracks[currentIndex];
 
   // Function to shuffle array randomly
   const shuffleArray = (array: Track[]) => {
@@ -39,11 +42,14 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
     
     const nextIndex = (currentIndex + 1) % shuffledTracks.length;
     setCurrentIndex(nextIndex);
-    
-    if (isPlaying && audioRef.current) {
+  };
+
+  // Effect to handle audio playback when currentIndex changes
+  useEffect(() => {
+    if (audioRef.current && isPlaying && currentTrack?.cloudinaryUrl) {
       audioRef.current.play().catch(console.error);
     }
-  };
+  }, [currentIndex, currentTrack, isPlaying]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -63,8 +69,6 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       audioRef.current.volume = newVolume;
     }
   };
-
-  const currentTrack = shuffledTracks[currentIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-purple-900">
@@ -147,14 +151,12 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       </main>
 
       {/* Hidden Audio Player */}
-      {currentTrack && currentTrack.cloudinaryUrl && (
-        <audio
-          ref={audioRef}
-          src={currentTrack.cloudinaryUrl}
-          onEnded={handleTrackEnd}
-          hidden
-        />
-      )}
+      <audio
+        ref={audioRef}
+        src={currentTrack?.cloudinaryUrl || ''}
+        onEnded={handleTrackEnd}
+        hidden
+      />
     </div>
   );
 } 

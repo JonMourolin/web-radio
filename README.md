@@ -2,8 +2,8 @@
 
 A modern web radio application built with Next.js and React.
 
-**Version**: 0.2.2  
-**Documentation**: [Version 0.2.2](docs/VERSION_0.2.2.md)
+**Version**: 0.2.6  
+**Documentation**: [Version 0.2.6](docs/VERSION_0.2.6.md)
 
 ## Features
 
