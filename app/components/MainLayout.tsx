@@ -146,7 +146,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       {/* Hidden Audio Player */}
       <audio
         ref={audioRef}
-        src={currentTrack ? `/api/stream/${encodeURIComponent(currentTrack.filename)}` : ''}
+        src={currentTrack ? currentTrack.cloudinaryUrl : ''}
         onEnded={handleTrackEnd}
         hidden
       />

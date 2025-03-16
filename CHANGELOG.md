@@ -64,4 +64,21 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - API pour la gestion des fichiers
 - Documentation de base
 - Structure du projet
-- Configuration Git/GitHub 
+- Configuration Git/GitHub
+
+## [0.2.2] - 2024-03-16
+
+### Ajouté
+- Migration complète du stockage des métadonnées vers Cloudinary
+- Barre de progression pour l'upload des fichiers
+- État détaillé pendant l'upload (pourcentage, message)
+- Rafraîchissement automatique après upload réussi
+
+### Modifié
+- Suppression du stockage local des métadonnées
+- Amélioration de la gestion des erreurs d'upload
+- Optimisation de l'interface d'upload avec retours visuels
+
+### Corrigé
+- Correction de l'erreur sur la route `/api/cover/[filename]`
+- Amélioration de la gestion des états d'upload 

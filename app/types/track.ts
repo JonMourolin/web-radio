@@ -16,4 +16,6 @@ export interface Track {
   duration: number;
   year?: string;
   genre?: string;
+  cloudinaryUrl: string;
+  cloudinaryPublicId: string;
 } 

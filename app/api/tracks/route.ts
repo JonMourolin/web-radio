@@ -1,65 +1,66 @@
 import { NextResponse } from 'next/server';
-import { readdir, readFile } from 'fs/promises';
-import path from 'path';
-import * as mm from 'music-metadata';
-import { Track, TrackMetadata } from '@/app/types/track';
-import crypto from 'crypto';
+import { v2 as cloudinary } from 'cloudinary';
+import { deleteAudio } from '@/app/services/cloudinary';
 
-async function getTrackMetadata(filePath: string, filename: string): Promise<TrackMetadata> {
-  try {
-    const buffer = await readFile(filePath);
-    const metadata = await mm.parseBuffer(buffer);
-    
-    return {
-      title: metadata.common.title || filename,
-      artist: metadata.common.artist || 'Artiste inconnu',
-      album: metadata.common.album,
-      coverUrl: metadata.common.picture?.[0] ? 
-        `/api/cover/${encodeURIComponent(filename)}` : 
-        '/images/default-cover.jpg',
-      duration: metadata.format.duration,
-      filename
-    };
-  } catch (error) {
-    console.error('Erreur lors de la lecture des métadonnées:', error);
-    return {
-      title: filename,
-      artist: 'Artiste inconnu',
-      filename,
-      coverUrl: '/images/default-cover.jpg'
-    };
-  }
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET() {
   try {
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const files = await readdir(uploadDir);
-    
-    // Filtrer pour ne garder que les fichiers audio
-    const audioFiles = files.filter(file => {
-      const ext = path.extname(file).toLowerCase();
-      return ['.mp3', '.wav', '.ogg', '.m4a'].includes(ext);
-    });
+    // Get all resources from the web-radio/tracks folder with their context
+    const result = await cloudinary.search
+      .expression('folder:web-radio/tracks/*')
+      .with_field('context')
+      .execute();
 
-    const tracks: Track[] = await Promise.all(
-      audioFiles.map(async (filename) => {
-        const filePath = path.join(uploadDir, filename);
-        const metadata = await getTrackMetadata(filePath, filename);
-        
-        return {
-          id: crypto.createHash('md5').update(filename).digest('hex'),
-          path: `/uploads/${filename}`,
-          metadata
-        };
-      })
-    );
+    const tracks = result.resources.map((resource: any) => {
+      const context = resource.context || {};
+      
+      return {
+        filename: resource.filename,
+        title: context.title || resource.filename.split('.')[0],
+        artist: context.artist || 'Unknown Artist',
+        album: context.album || 'Unknown Album',
+        duration: context.duration || 0,
+        coverPath: context.coverUrl || '',
+        cloudinaryUrl: resource.secure_url,
+        cloudinaryPublicId: resource.public_id,
+      };
+    });
 
     return NextResponse.json({ tracks });
   } catch (error) {
-    console.error('Erreur lors de la lecture des fichiers:', error);
+    console.error('Error loading tracks:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la lecture des fichiers' },
+      { error: 'Failed to load tracks' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { publicId } = await request.json();
+
+    if (!publicId) {
+      return NextResponse.json(
+        { error: 'Public ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Delete from Cloudinary
+    await deleteAudio(publicId);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting track:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete track' },
       { status: 500 }
     );
   }

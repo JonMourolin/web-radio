@@ -1,92 +1,126 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
 import * as mm from 'music-metadata';
-import { searchRelease, getReleaseDetails } from '@/app/services/discogs';
+import { uploadAudio } from '@/app/services/cloudinary';
+import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+async function searchDiscogs(query: string) {
+  try {
+    const response = await fetch(
+      `https://api.discogs.com/database/search?q=${encodeURIComponent(query)}&type=release`,
+      {
+        headers: {
+          'Authorization': `Discogs key=${process.env.DISCOGS_CONSUMER_KEY}, secret=${process.env.DISCOGS_CONSUMER_SECRET}`,
+          'User-Agent': 'WebRadio/1.0',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Discogs search failed');
+    }
+
+    const data = await response.json();
+    return data.results?.[0] || null;
+  } catch (error) {
+    console.error('Error searching Discogs:', error);
+    return null;
+  }
+}
+
+async function updateMetadata(trackId: string, result: any) {
+  try {
+    const metadata = {
+      title: result.title.split(' - ')[1] || result.title,
+      artist: result.title.split(' - ')[0],
+      album: result.title.split(' - ')[1] || result.title,
+      year: result.year,
+      coverUrl: result.cover_image,
+      updated_at: new Date().toISOString(),
+      source: 'discogs'
+    };
+
+    // Convert metadata object to Cloudinary context string format
+    const contextStr = Object.entries(metadata)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('|');
+
+    await cloudinary.uploader.add_context(
+      contextStr,
+      [trackId],
+      { resource_type: 'video' }
+    );
+
+    return metadata;
+  } catch (error) {
+    console.error('Error updating metadata:', error);
+    return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    
+
     if (!file) {
       return NextResponse.json(
-        { error: 'Aucun fichier fourni' },
+        { error: 'No file provided' },
         { status: 400 }
       );
     }
 
-    // Vérifier le type de fichier
-    if (!file.type.startsWith('audio/')) {
-      return NextResponse.json(
-        { error: 'Le fichier doit être un fichier audio' },
-        { status: 400 }
-      );
-    }
+    // Upload to Cloudinary
+    const { url: cloudinaryUrl, publicId: cloudinaryPublicId } = await uploadAudio(file);
 
-    // Créer le dossier uploads s'il n'existe pas
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const filePath = path.join(uploadDir, file.name);
-
-    // Sauvegarder le fichier
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
-
-    // Extraire les métadonnées initiales
-    const metadata = await mm.parseBuffer(buffer);
-    const initialQuery = metadata.common.title || metadata.common.artist || file.name.replace(/\.[^/.]+$/, "");
-
-    try {
-      // Recherche automatique sur Discogs
-      const searchResults = await searchRelease(initialQuery);
-      
-      if (searchResults.length > 0) {
-        // Utiliser le premier résultat
-        const firstResult = searchResults[0];
-        const details = await getReleaseDetails(firstResult.id);
-        
-        // Télécharger la pochette si disponible
-        let imageBuffer;
-        if (details.coverUrl) {
-          const imageResponse = await fetch(details.coverUrl);
-          imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-        }
-
-        // Mettre à jour les tags ID3
-        const NodeID3 = (await import('node-id3')).default;
-        const tags = {
-          title: details.title,
-          artist: details.artist,
-          album: details.album,
-          year: details.year,
-          genre: details.genre,
-          image: imageBuffer ? {
-            mime: 'image/jpeg',
-            type: {
-              id: 3,
-              name: 'front cover'
-            },
-            description: 'Album cover',
-            imageBuffer
-          } : undefined
-        };
-
-        NodeID3.write(tags, filePath);
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'enrichissement automatique:', error);
-      // On continue même si l'enrichissement automatique échoue
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Fichier uploadé avec succès'
+    // Parse metadata
+    const buffer = await file.arrayBuffer();
+    const metadata = await mm.parseBuffer(new Uint8Array(buffer), {
+      mimeType: file.type,
+      size: file.size,
     });
+
+    // Create track object
+    const track = {
+      filename: file.name,
+      title: metadata.common.title || path.parse(file.name).name,
+      artist: metadata.common.artist || 'Unknown Artist',
+      album: metadata.common.album || 'Unknown Album',
+      duration: metadata.format.duration || 0,
+      year: metadata.common.year?.toString(),
+      genre: metadata.common.genre?.[0],
+      cloudinaryUrl,
+      cloudinaryPublicId,
+    };
+
+    // Try to find and apply Discogs metadata automatically
+    const searchQuery = track.artist !== 'Unknown Artist' 
+      ? `${track.artist} - ${track.title}`
+      : track.filename;
+      
+    const discogsResult = await searchDiscogs(searchQuery);
+    if (discogsResult) {
+      const updatedMetadata = await updateMetadata(cloudinaryPublicId, discogsResult);
+      if (updatedMetadata) {
+        track.title = updatedMetadata.title;
+        track.artist = updatedMetadata.artist;
+        track.album = updatedMetadata.album;
+        track.year = updatedMetadata.year;
+      }
+    }
+
+    return NextResponse.json({ track });
   } catch (error) {
-    console.error('Erreur lors de l\'upload:', error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de l\'upload du fichier' },
+      { error: 'Error processing file' },
       { status: 500 }
     );
   }
