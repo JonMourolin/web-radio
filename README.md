@@ -1,66 +1,80 @@
 # Web Radio
 
-Application de web radio minimaliste permettant la diffusion de fichiers audio via un player HTML5.
+A modern web radio application built with Next.js and React.
 
-## Version Actuelle : 0.2.1
+**Version**: 0.2.0  
+**Documentation**: [Version 0.2.0](docs/VERSION_0.2.0.md)
 
-[Documentation détaillée de la version courante](docs/VERSION_0.2.1.md)
-[Journal des modifications](CHANGELOG.md)
+## Features
 
-## Fonctionnalités
-
-- Player audio minimaliste (play/pause, volume)
-- Affichage des métadonnées (titre, artiste, album)
-- Support des pochettes d'albums
-- Interface d'upload de fichiers
-- Lecture automatique de la playlist
-- Enrichissement automatique des métadonnées via Discogs
-- Possibilité d'enrichissement manuel
-- Mise à jour automatique des tags ID3
+- 🎵 Continuous random playback of audio tracks
+- 🎨 Modern, responsive user interface
+- 🎧 Simple audio controls with volume adjustment
+- 🖼️ Album cover display
+- 📝 Automatic metadata extraction
+- 🔄 Seamless track transitions
+- 📱 Mobile-friendly design
+- 🎯 Minimalist user experience
 
 ## Installation
 
-```bash
-# Installation des dépendances
-npm install
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/web-radio.git
+   cd web-radio
+   ```
 
-# Configuration
-# Créez un fichier .env.local avec vos clés Discogs :
-DISCOGS_CONSUMER_KEY=votre_consumer_key
-DISCOGS_CONSUMER_SECRET=votre_consumer_secret
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-# Lancement en développement
-npm run dev
+3. Create uploads directory:
+   ```bash
+   mkdir -p public/uploads
+   ```
 
-# Build pour la production
-npm run build
-npm start
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+   Or build and start for production:
+   ```bash
+   npm run build
+   npm start
+   ```
+
+## Usage
+
+1. Access the admin interface at `/admin`
+2. Upload audio files through the admin interface
+3. Visit the main page to start listening
+4. Use the play/pause button and volume control to manage playback
+5. Tracks will play continuously in random order
+
+## Directory Structure
+
 ```
-
-## Utilisation
-
-1. Accédez à l'interface d'administration : http://localhost:3000/admin
-2. Uploadez vos fichiers audio (enrichissement automatique via Discogs)
-3. Modifiez manuellement les métadonnées si nécessaire
-4. Écoutez votre web radio : http://localhost:3000
-
-## Structure des Dossiers
-
-- `/app` : Code source de l'application
-- `/public/uploads` : Stockage des fichiers audio
-- `/docs` : Documentation technique
-- `/public/images` : Assets statiques
+web-radio/
+├── app/
+│   ├── components/      # React components
+│   ├── types/          # TypeScript types
+│   ├── api/            # API routes
+│   └── admin/          # Admin interface
+├── public/
+│   └── uploads/        # Audio files storage
+└── docs/              # Documentation
+```
 
 ## Technologies
 
-- Next.js 15.2.2
+- Next.js 14
 - React
 - TypeScript
 - Tailwind CSS
 - music-metadata
-- node-id3
-- disconnect (API Discogs)
 
-## Licence
+## License
 
-MIT
+MIT License - See [LICENSE](LICENSE) for details.

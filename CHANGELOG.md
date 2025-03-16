@@ -19,6 +19,16 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Mise à jour automatique des tags ID3
 - Support des pochettes d'albums depuis Discogs
 - Configuration de l'API Discogs
+- Continuous random playback of tracks
+- Automatic track transition when a song ends
+- Shuffle functionality for the playlist
+- Improved player interface with modern design
+- Volume control with persistent state
+- Responsive layout with left content and right player sections
+
+### Modifié
+- Interface utilisateur simplifiée et plus moderne
+- Suppression des contrôles de navigation dans le morceau
 
 ## [0.1.0] - 2024-03-16
 
@@ -32,6 +42,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Modifié
 - Interface utilisateur simplifiée et plus moderne
 - Suppression des contrôles de navigation dans le morceau
+
+### Corrigé
+- Gestion améliorée des états vides du player audio
+- Ajout d'un message explicite quand aucune piste n'est disponible
+- Correction du problème de chaîne vide dans l'attribut src du player
 
 ## [0.0.2] - 2024-03-16
 

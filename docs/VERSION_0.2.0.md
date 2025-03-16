@@ -1,111 +1,101 @@
-# Web Radio - Documentation v0.2.0
+# Version 0.2.0
 
-## Nouveautés
+## Overview
+Version 0.2.0 introduces continuous playback functionality and an improved user interface for the web radio application. This update focuses on enhancing the listening experience with automatic track transitions and a modern, responsive design.
 
-Cette version ajoute l'enrichissement automatique des métadonnées via l'API Discogs :
+## New Features
 
-### Enrichissement des Métadonnées
-- Intégration avec l'API Discogs
-- Interface de recherche intuitive
-- Sélection parmi les résultats proposés
-- Mise à jour automatique des tags ID3
-- Récupération des pochettes d'albums
+### Continuous Playback
+- Automatic random playback of all available tracks
+- Seamless transition between tracks
+- Playlist shuffling for varied listening experience
+- Automatic replay of playlist when reaching the end
 
-### Configuration Discogs
-- Support des clés d'API Discogs
-- Variables d'environnement sécurisées
-- Documentation de configuration
+### Enhanced User Interface
+- Modern design with gradient backgrounds and blur effects
+- Responsive layout with optimized content sections
+- Improved volume control
+- Visual feedback for playback state
+- Better display of track metadata and cover art
 
-## Fonctionnalités Actuelles
+## Current Functionalities
 
-### 1. Interface Utilisateur
-- Design responsive et moderne
-- Affichage des métadonnées
-- Player audio minimaliste
-- Interface d'enrichissement des métadonnées
-- Thème clair avec gradients subtils
+### User Interface
+- Fixed header with playback controls and volume adjustment
+- Main content area with 2/3 and 1/3 split layout
+- Album cover display with fallback for missing covers
+- Track information display (title, artist, album)
 
-### 2. Lecteur Audio
-- Contrôles simplifiés
-- Gestion du volume
-- Lecture automatique de la playlist
-- Affichage des informations du morceau
-- Support des pochettes d'albums
+### Audio Player
+- Play/Pause functionality
+- Volume control with persistent state
+- Automatic track progression
+- Random playback order
+- Hidden HTML5 audio element for playback
 
-### 3. Administration
-- Interface d'upload de fichiers
-- Support des formats : .mp3, .wav, .ogg, .m4a
-- Validation des types de fichiers
-- Extraction automatique des métadonnées
-- Enrichissement via Discogs
-- Gestion des métadonnées existantes
+### Administration
+- File upload interface for adding new tracks
+- Automatic metadata extraction
+- Cover art handling
+- Track management system
 
-### 4. API
-- `/api/upload` : Gestion des uploads de fichiers
-- `/api/tracks` : Liste des pistes avec métadonnées
-- `/api/cover/[filename]` : Récupération des pochettes
-- `/api/enrich` : Enrichissement des métadonnées
-- Intégration Discogs
+### API Endpoints
+- `/api/tracks` - Get list of available tracks
+- `/api/stream/[filename]` - Stream audio files
+- `/api/cover/[filename]` - Serve album covers
+- `/api/upload` - Handle file uploads
+- `/api/metadata` - Manage track metadata
 
-## Structure du Projet
-
+## Project Structure
 ```
 web-radio/
 ├── app/
 │   ├── components/
-│   │   ├── SimplePlayer.tsx
-│   │   └── MetadataEnricher.tsx
-│   ├── services/
-│   │   └── discogs.ts
+│   │   ├── MainLayout.tsx
+│   │   └── ...
 │   ├── types/
 │   │   └── track.ts
-│   ├── admin/
-│   │   └── page.tsx
 │   ├── api/
-│   │   ├── upload/
 │   │   ├── tracks/
-│   │   ├── cover/
-│   │   └── enrich/
+│   │   ├── stream/
+│   │   └── cover/
 │   └── page.tsx
 ├── public/
-│   ├── uploads/
 │   └── images/
 ├── docs/
-└── .env.local
+└── ...
 ```
 
-## Technologies Utilisées
-- Next.js 15.2.2
-- React
-- TypeScript
-- Tailwind CSS
-- music-metadata
-- node-id3
-- disconnect (API Discogs)
+## Technologies Used
+- Next.js 14
+- React with TypeScript
+- Tailwind CSS for styling
+- HTML5 Audio API
+- music-metadata for audio file parsing
 
-## Configuration
+## Planned Improvements
+1. Playlist Management
+   - Save and load playlists
+   - Custom playlist ordering
+   - Favorite tracks
 
-1. Créer un compte Discogs
-2. Créer une application sur https://www.discogs.com/settings/developers
-3. Copier les clés d'API dans `.env.local` :
-   ```
-   DISCOGS_CONSUMER_KEY=votre_consumer_key
-   DISCOGS_CONSUMER_SECRET=votre_consumer_secret
-   ```
+2. Advanced Playback Controls
+   - Skip forward/backward
+   - Progress bar with seeking
+   - Repeat modes (single track, playlist)
 
-## Utilisation de l'Enrichissement
+3. User Experience
+   - Keyboard shortcuts
+   - Mobile-optimized controls
+   - Transition animations
 
-1. Accéder à l'interface d'administration
-2. Sélectionner un fichier audio
-3. Utiliser la recherche Discogs
-4. Sélectionner le résultat correspondant
-5. Les métadonnées sont automatiquement mises à jour
+4. Performance Optimization
+   - Caching for audio streams
+   - Lazy loading of track metadata
+   - Optimized image loading
 
-## Points d'Amélioration Prévus
-1. Authentification administrateur
-2. Gestion de playlist
-3. Streaming optimisé
-4. Interface de gestion des fichiers
-5. Analytics d'écoute
-6. Support des formats de métadonnées additionnels
-7. Amélioration de la correspondance des résultats Discogs 
+5. Additional Features
+   - Equalizer
+   - Visualizations
+   - Track search and filtering
+   - Dark/light theme toggle 

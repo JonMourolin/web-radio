@@ -8,7 +8,12 @@ export interface TrackMetadata {
 }
 
 export interface Track {
-  id: string;
-  path: string;
-  metadata: TrackMetadata;
+  filename: string;
+  title: string;
+  artist: string;
+  album: string;
+  coverPath: string;
+  duration: number;
+  year?: string;
+  genre?: string;
 } 
