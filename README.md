@@ -2,9 +2,10 @@
 
 Application de web radio minimaliste permettant la diffusion de fichiers audio via un player HTML5.
 
-## Version Actuelle : 0.0.1
+## Version Actuelle : 0.0.2
 
-[Documentation détaillée de la version courante](docs/VERSION_0.0.1.md)
+[Documentation détaillée de la version courante](docs/VERSION_0.0.2.md)
+[Journal des modifications](CHANGELOG.md)
 
 ## Installation
 
