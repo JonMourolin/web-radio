@@ -185,11 +185,6 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
                 <p className="truncate max-w-[200px]">
                   <span className="font-bold">{currentTrack.artist}</span> - {currentTrack.title}
                 </p>
-                {radioState?.remainingTime && (
-                  <p className="text-xs text-[#008F11]/70">
-                    Reste: {formatTime(radioState.remainingTime)}
-                  </p>
-                )}
               </div>
             </>
           )}
@@ -225,26 +220,11 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
             />
           </div>
         </div>
-        
-        {/* Coming up next section */}
-        {radioState?.nextTracks && radioState.nextTracks.length > 0 && (
-          <div className="absolute bottom-4 right-4 bg-black/80 p-3 rounded-md border border-[#008F11]/30 max-w-xs">
-            <h3 className="text-[#008F11] text-sm mb-2 font-doto">À suivre :</h3>
-            <ul className="space-y-1">
-              {radioState.nextTracks.map((track, index) => (
-                <li key={index} className="text-white/80 text-xs flex items-center">
-                  <span className="w-3 text-[#008F11]/60 mr-1">{index + 1}.</span>
-                  <span className="truncate">{track.artist} - {track.title}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </main>
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.11</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.12</p>
       </footer>
 
       {/* Hidden Audio Player */}

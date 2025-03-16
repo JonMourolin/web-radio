@@ -4,6 +4,13 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.12] - 2024-03-16
+
+### Modifié
+- Suppression de l'affichage du temps restant pour une interface plus épurée
+- Retrait de la section "À suivre" pour un design minimaliste
+- Conservation de la logique sous-jacente pour de futures fonctionnalités
+
 ## [0.2.11] - 2024-03-16
 
 ### Modifié
@@ -169,19 +176,6 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Documentation de base
 - Structure du projet
 - Configuration Git/GitHub
-
-## [0.2.12] - 2024-03-16
-
-### Ajouté
-- Transformation en véritable radio avec flux continu
-- Synchronisation du lecteur avec l'état global du serveur
-- Affichage des prochains morceaux à venir
-- Expérience d'écoute partagée pour tous les utilisateurs
-
-### Modifié
-- Architecture repensée avec un état global côté serveur
-- Lecture audio synchronisée avec le serveur
-- Interface mise à jour pour refléter l'expérience radio 
 
 ## [0.2.13] - 2024-03-16
 
