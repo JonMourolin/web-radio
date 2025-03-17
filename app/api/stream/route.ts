@@ -1,6 +1,26 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
-import { kv } from '@vercel/kv';
+
+// Import conditionnel pour éviter les erreurs en local
+let kv: any;
+try {
+  // En production, cette importation fonctionnera
+  const vercelKv = require('@vercel/kv');
+  kv = vercelKv.kv;
+} catch (error) {
+  console.warn('Vercel KV module not available, using in-memory storage');
+  // Implémentation en mémoire pour le développement local
+  kv = {
+    _storage: new Map(),
+    async get(key: string) {
+      return this._storage.get(key);
+    },
+    async set(key: string, value: any) {
+      this._storage.set(key, value);
+      return 'OK';
+    }
+  };
+}
 
 // Configure Cloudinary
 cloudinary.config({
