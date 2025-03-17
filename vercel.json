@@ -10,5 +10,6 @@
     "app/api/stream/route.ts": {
       "maxDuration": 10
     }
-  }
+  },
+  "buildCommand": "npm run build"
 } 
