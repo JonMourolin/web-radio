@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@vercel/kv": "^1.0.1",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.6.0",
     "disconnect": "^1.2.2",
