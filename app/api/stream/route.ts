@@ -302,13 +302,32 @@ export async function GET() {
       await kv.set(REFRESH_KEY, now);
     }
     
-    // Vérifier et avancer la piste si nécessaire
-    await checkAndAdvanceTrack(state);
+    // Vérifier et avancer la piste si nécessaire, mais uniquement
+    // si le client fait une requête complète (non-revalidation)
+    // et pas à chaque rafraîchissement de page
+    const lastCheckTime = await kv.get(LAST_CHECK_KEY) || 0;
+    const MIN_CHECK_INTERVAL = 5000; // 5 secondes entre les vérifications
+    
+    if (now - lastCheckTime > MIN_CHECK_INTERVAL) {
+      console.log(`[Radio] Vérification de l'avancement de la piste (dernier contrôle: ${new Date(lastCheckTime).toISOString()})`);
+      await checkAndAdvanceTrack(state);
+      await kv.set(LAST_CHECK_KEY, now);
+    } else {
+      console.log(`[Radio] Vérification ignorée - trop récente (dernier contrôle: ${new Date(lastCheckTime).toISOString()})`);
+    }
     
     // Récupérer les informations de lecture
     const playbackInfo = getPlaybackInfo(state);
     
-    return NextResponse.json(playbackInfo);
+    // Ajouter les en-têtes pour éviter la mise en cache du navigateur
+    return new NextResponse(JSON.stringify(playbackInfo), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
   } catch (error) {
     console.error('Error in GET route:', error);
     return NextResponse.json(

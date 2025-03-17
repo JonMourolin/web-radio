@@ -4,6 +4,19 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.15] - 2024-03-19
+
+### Corrigé
+- Résolution du problème de changement de morceau à chaque rafraîchissement de page
+- Optimisation de la vérification de l'avancement des pistes avec intervalle minimal
+- Prévention des requêtes trop fréquentes pour l'avancement des pistes
+- Correction du comportement de synchronisation entre clients
+
+### Modifié
+- Amélioration des en-têtes HTTP pour éviter la mise en cache côté navigateur
+- Optimisation de la gestion des vérifications d'état dans API routes
+- Amélioration de la journalisation avec information détaillée sur les vérifications
+
 ## [0.2.14] - 2024-03-18
 
 ### Ajouté
