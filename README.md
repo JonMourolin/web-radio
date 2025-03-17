@@ -2,8 +2,9 @@
 
 A modern web radio application built with Next.js and React.
 
-**Version**: 0.2.10  
-**Documentation**: [Version 0.2.10](docs/VERSION_0.2.10.md)
+**Version**: 0.2.13  
+**Documentation**: [Version 0.2.13](docs/VERSION_0.2.13.md)  
+**Coding Standards**: [Vibe Coding Rules](docs/VIBE_CODING_RULES.md)
 
 ## Features
 

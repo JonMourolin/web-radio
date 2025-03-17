@@ -177,13 +177,16 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Structure du projet
 - Configuration Git/GitHub
 
-## [0.2.13] - 2024-03-16
+## [0.2.13] - 2024-03-17
 
 ### Corrigé
-- Correction du bug de saut audio toutes les 11 secondes
-- Amélioration de la synchronisation entre le serveur et les clients
-- Optimisation des transitions entre les morceaux
-- Affichage du temps restant pour chaque piste
+- Correction du problème de synchronisation audio en production
+- Implémentation d'un stockage d'état persistant avec Vercel KV
+- Uniformisation de l'expérience entre environnement local et production
+
+### Ajouté
+- Support pour Vercel KV comme source de vérité pour l'état de la radio
+- Gestion améliorée des transitions entre morceaux
 
 ### Modifié
 - Refonte de la gestion des pistes côté serveur
