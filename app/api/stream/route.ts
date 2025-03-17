@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
+import { Redis } from '@upstash/redis';
 
-// Import conditionnel pour éviter les erreurs en local
+// Configurer Redis/KV
 let kv: any;
 try {
-  // En production, cette importation fonctionnera
-  const vercelKv = require('@vercel/kv');
-  kv = vercelKv.kv;
+  // Utiliser Redis.fromEnv() qui utilise automatiquement les variables d'environnement
+  kv = Redis.fromEnv();
+  console.log('Upstash Redis initialisé avec succès via fromEnv()');
 } catch (error) {
-  console.warn('Vercel KV module not available, using in-memory storage');
+  console.warn('Upstash Redis module not available, using in-memory storage', error);
   // Implémentation en mémoire pour le développement local
   kv = {
     _storage: new Map(),
@@ -46,10 +47,13 @@ interface RadioStateData {
 async function getRadioState(): Promise<RadioStateData> {
   try {
     // Tenter de récupérer l'état
-    const state = await kv.get<RadioStateData>(RADIO_STATE_KEY);
+    console.log(`[Radio] Récupération de l'état radio depuis la clé ${RADIO_STATE_KEY}`);
+    const state = await kv.get(RADIO_STATE_KEY);
+    console.log(`[Radio] État récupéré:`, state ? 'Trouvé' : 'Non trouvé');
     
     // Si l'état n'existe pas, retourner un état par défaut
     if (!state) {
+      console.log('[Radio] Aucun état trouvé, création d\'un état par défaut');
       const defaultState: RadioStateData = {
         currentTrackIndex: 0,
         playlist: [],
@@ -59,16 +63,18 @@ async function getRadioState(): Promise<RadioStateData> {
       };
       
       // Initialiser la playlist
+      console.log('[Radio] Initialisation d\'une nouvelle playlist');
       await refreshPlaylist(defaultState);
       
       // Sauvegarder et retourner l'état par défaut
+      console.log('[Radio] Sauvegarde de l\'état par défaut');
       await kv.set(RADIO_STATE_KEY, defaultState);
       return defaultState;
     }
     
     return state;
   } catch (error) {
-    console.error('Error getting radio state from KV:', error);
+    console.error('[Radio] Erreur lors de la récupération de l\'état:', error);
     
     // En cas d'erreur, retourner un état vide mais fonctionnel
     return {
@@ -84,9 +90,11 @@ async function getRadioState(): Promise<RadioStateData> {
 // Met à jour l'état de la radio dans le stockage KV
 async function updateRadioState(state: RadioStateData): Promise<void> {
   try {
+    console.log(`[Radio] Mise à jour de l'état radio: piste actuelle ${state.currentTrackIndex}, démarrée à ${new Date(state.trackStartTime).toISOString()}`);
     await kv.set(RADIO_STATE_KEY, state);
+    console.log('[Radio] État mis à jour avec succès');
   } catch (error) {
-    console.error('Error updating radio state in KV:', error);
+    console.error('[Radio] Erreur lors de la mise à jour de l\'état:', error);
   }
 }
 
@@ -180,7 +188,7 @@ async function checkAndAdvanceTrack(state: RadioStateData): Promise<boolean> {
   try {
     // Éviter les vérifications trop fréquentes
     const now = Date.now();
-    const lastCheck = await kv.get<number>(LAST_CHECK_KEY) || 0;
+    const lastCheck = await kv.get(LAST_CHECK_KEY) || 0;
     
     if (now - lastCheck < 2000) {
       return false;
@@ -266,13 +274,16 @@ const REFRESH_INTERVAL = 6 * 60 * 60 * 1000; // 6 heures en millisecondes
 
 export async function GET() {
   try {
+    console.log('[Radio] Début de la requête GET');
+    
     // Récupérer l'état actuel
     const state = await getRadioState();
+    console.log(`[Radio] État récupéré: ${state.playlist.length} pistes, piste actuelle: ${state.currentTrackIndex}`);
     
     // Vérifier si nous devons rafraîchir la playlist (toutes les 6 heures)
     const now = Date.now();
     const lastRefreshKey = 'radio:lastRefresh';
-    const lastRefresh = await kv.get<number>(lastRefreshKey) || 0;
+    const lastRefresh = await kv.get(lastRefreshKey) || 0;
     
     if (now - lastRefresh > REFRESH_INTERVAL) {
       console.log('Rafraîchissement périodique de la playlist...');

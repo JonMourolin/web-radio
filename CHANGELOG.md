@@ -4,6 +4,22 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.13] - 2024-03-17
+
+### Ajouté
+- Intégration avec Upstash Redis via le SDK officiel
+- Synchronisation du flux audio pour tous les utilisateurs
+- Expérience radio partagée avec transitions de pistes simultanées
+- Mécanisme de fallback pour le développement local
+
+### Corrigé
+- Problème de synchronisation audio en production
+- Uniformisation de l'expérience entre environnement local et production
+
+### Modifié
+- Refonte de la gestion d'état avec stockage persistant via Redis
+- Migration de @vercel/kv vers @upstash/redis pour une meilleure compatibilité
+
 ## [0.2.12] - 2024-03-16
 
 ### Modifié
