@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   // Liste des clés d'environnement à vérifier
   const keysToCheck = [
@@ -49,5 +51,10 @@ export async function GET() {
     message: 'Vérification des variables d\'environnement',
     environment: envInfo,
     variables: envStatus
+  }, {
+    headers: {
+      'Cache-Control': 'no-store, max-age=0',
+      'Content-Type': 'application/json'
+    }
   });
 } 

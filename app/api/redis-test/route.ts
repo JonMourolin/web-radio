@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Configuration explicite des informations Redis
@@ -19,7 +21,7 @@ export async function GET() {
     console.log('Redis initialisé avec succès avec configuration directe');
 
     // Clé de test
-    const testKey = 'radio:test';
+    const testKey = 'radio:test:v2';
     
     // Récupérer la valeur actuelle
     const currentValue = await redis.get(testKey);
@@ -43,6 +45,11 @@ export async function GET() {
         KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN ? 'Défini' : 'Non défini',
         KV_REST_API_URL: process.env.KV_REST_API_URL ? 'Défini' : 'Non défini'
       }
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+        'Content-Type': 'application/json'
+      }
     });
   } catch (error) {
     console.error('Erreur lors du test Redis:', error);
@@ -56,6 +63,12 @@ export async function GET() {
         KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN ? 'Défini' : 'Non défini',
         KV_REST_API_URL: process.env.KV_REST_API_URL ? 'Défini' : 'Non défini'
       }
-    }, { status: 500 });
+    }, { 
+      status: 500,
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+        'Content-Type': 'application/json'
+      }
+    });
   }
 } 
