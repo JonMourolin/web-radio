@@ -4,6 +4,16 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.16] - 2024-03-19
+
+### Ajouté
+- Fonctionnalité permettant de rejoindre le flux radio en cours de lecture plutôt qu'au début du morceau
+- Synchronisation complète pour les nouveaux auditeurs qui rejoignent le stream
+
+### Corrigé
+- Amélioration de l'expérience utilisateur pour les nouveaux auditeurs
+- Comportement plus cohérent lors du premier chargement de la radio
+
 ## [0.2.15] - 2024-03-19
 
 ### Corrigé

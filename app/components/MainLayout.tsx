@@ -62,8 +62,20 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
           }
         }
       } else if (lastTrackId === null && newTrackId) {
-        // Premier chargement
+        // Premier chargement - Correction pour rejoindre le flux à la position actuelle
+        console.log('First load, joining stream at current position:', data.position);
         setLastTrackId(newTrackId);
+        
+        // Positionner l'audio à la position actuelle du flux
+        if (audioRef.current) {
+          audioRef.current.src = data.currentTrack.cloudinaryUrl;
+          audioRef.current.currentTime = data.position;
+          
+          // Démarrer la lecture si la radio est en cours de lecture
+          if (data.isPlaying && !localPause) {
+            audioRef.current.play().catch(console.error);
+          }
+        }
       } else {
         // Même piste, on ajuste juste la position si nécessaire
         if (audioRef.current && Math.abs(audioRef.current.currentTime - data.position) > 5) {
@@ -224,7 +236,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.15 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.16 - Vercel KV</p>
       </footer>
 
       {/* Hidden Audio Player */}
