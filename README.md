@@ -2,8 +2,8 @@
 
 A modern web radio application built with Next.js and React.
 
-**Version**: 0.2.13  
-**Documentation**: [Version 0.2.13](docs/VERSION_0.2.13.md)  
+**Version**: 0.2.14  
+**Documentation**: [Version 0.2.14](docs/VERSION_0.2.14.md)  
 **Coding Standards**: [Vibe Coding Rules](docs/VIBE_CODING_RULES.md)
 
 ## Features
@@ -24,6 +24,8 @@ A modern web radio application built with Next.js and React.
 - 📋 Coming up next preview section
 - ⏱️ Remaining time display
 - 🔇 Persistent pause state
+- 🔧 Diagnostic tools for environment variables
+- 🧪 Redis connectivity testing
 
 ## Installation
 

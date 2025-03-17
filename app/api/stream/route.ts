@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { Redis } from '@upstash/redis';
 
+// Configuration explicite des informations Redis
+const redisUrl = process.env.KV_REST_API_URL || '';
+const redisToken = process.env.KV_REST_API_TOKEN || '';
+
+// Afficher les informations de connexion (versions masquées) pour le débogage
+console.log(`Redis URL: ${redisUrl ? 'Définie' : 'Non définie'}`);
+console.log(`Redis Token: ${redisToken ? 'Défini' : 'Non défini'}`);
+
 // Configurer Redis/KV
 let kv: any;
 try {
-  // Utiliser Redis.fromEnv() qui utilise automatiquement les variables d'environnement
-  kv = Redis.fromEnv();
-  console.log('Upstash Redis initialisé avec succès via fromEnv()');
+  // Utiliser une configuration directe au lieu de fromEnv()
+  kv = new Redis({
+    url: redisUrl,
+    token: redisToken
+  });
+  console.log('Upstash Redis initialisé avec succès avec configuration directe');
 } catch (error) {
   console.warn('Upstash Redis module not available, using in-memory storage', error);
   // Implémentation en mémoire pour le développement local
@@ -31,8 +42,9 @@ cloudinary.config({
 });
 
 // Clés pour le stockage Redis
-const RADIO_STATE_KEY = 'radio:state';
-const LAST_CHECK_KEY = 'radio:lastCheck';
+const RADIO_STATE_KEY = 'radio:state:v2';
+const LAST_CHECK_KEY = 'radio:lastCheck:v2';
+const REFRESH_KEY = 'radio:lastRefresh:v2';
 
 // Interface pour typer l'état de la radio
 interface RadioStateData {
@@ -282,13 +294,12 @@ export async function GET() {
     
     // Vérifier si nous devons rafraîchir la playlist (toutes les 6 heures)
     const now = Date.now();
-    const lastRefreshKey = 'radio:lastRefresh';
-    const lastRefresh = await kv.get(lastRefreshKey) || 0;
+    const lastRefresh = await kv.get(REFRESH_KEY) || 0;
     
     if (now - lastRefresh > REFRESH_INTERVAL) {
       console.log('Rafraîchissement périodique de la playlist...');
       await refreshPlaylist(state);
-      await kv.set(lastRefreshKey, now);
+      await kv.set(REFRESH_KEY, now);
     }
     
     // Vérifier et avancer la piste si nécessaire

@@ -3,9 +3,20 @@ import { Redis } from '@upstash/redis';
 
 export async function GET() {
   try {
+    // Configuration explicite des informations Redis
+    const redisUrl = process.env.KV_REST_API_URL || '';
+    const redisToken = process.env.KV_REST_API_TOKEN || '';
+    
+    // Afficher les informations de connexion (versions masquées) pour le débogage
+    console.log(`Redis URL: ${redisUrl ? 'Définie' : 'Non définie'}`);
+    console.log(`Redis Token: ${redisToken ? 'Défini' : 'Non défini'}`);
+    
     // Initialiser Redis
-    const redis = Redis.fromEnv();
-    console.log('Redis initialisé avec succès');
+    const redis = new Redis({
+      url: redisUrl,
+      token: redisToken
+    });
+    console.log('Redis initialisé avec succès avec configuration directe');
 
     // Clé de test
     const testKey = 'radio:test';
