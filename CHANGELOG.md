@@ -272,3 +272,36 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Corrigé
 - Correction du bug de l'attribut `src` vide dans le composant `MainLayout`
+
+## 0.2.33 (2024-09-10)
+
+### 🔧 Corrections
+
+- **Bouton Play** : Correction du bouton play qui ne fonctionnait plus en production et en local
+  - Ajout de l'initialisation manquante de l'élément audio dans le GlobalPlayer
+  - Amélioration de la gestion du cycle de vie de l'audio
+
+## 0.2.32 (2024-09-09)
+
+### 🚀 Améliorations Majeures
+
+- **Gestion audio** : Implémentation d'une architecture client-serveur pour la détection de fin de piste
+  - Le client (navigateur) détecte maintenant naturellement la fin d'une piste et en informe le serveur
+  - Ajout d'une API dédiée pour la notification de fin de piste depuis le client
+  - Réduction de l'agressivité des changements automatiques côté serveur
+  - Meilleure tolérance pour les pistes longues (>5 minutes) avec une marge supplémentaire
+  - Détection et résolution des désynchronisations entre la position client et serveur
+
+### 🔧 Corrections
+
+- **Changement de piste** : Correction des problèmes de sauts et retours au début des pistes
+  - Détection plus précise des fins de piste basée sur l'événement `ended` de l'API Audio
+  - Vérification supplémentaire du temps restant avant notification
+  - Mécanisme pour éviter les notifications en double
+
+### 📊 Diagnostics
+
+- **Outils de débogage** : Amélioration des fonctions de diagnostic 
+  - Affichage formaté des états audio avec `console.table`
+  - Détails supplémentaires sur l'état de fin de piste et les notifications
+  - Logs enrichis pour suivre les désynchronisations client-serveur

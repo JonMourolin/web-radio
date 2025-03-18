@@ -30,7 +30,7 @@ let lastTrackCheck = new Date();
 const REDIS_TIMEOUT = 15000; // 15 secondes
 
 // Marge de tolérance pour la fin des pistes (en secondes)
-const END_TRACK_TOLERANCE = 2; // Ajoute 2 secondes de tolérance
+const END_TRACK_TOLERANCE = 10; // Augmenté à 10 secondes pour plus de marge
 
 interface RadioState {
   currentTrack: Track | null;
@@ -176,8 +176,25 @@ async function getRadioState(force = false): Promise<RadioState | null> {
       const currentTrack = state.tracks[state.currentTrackIndex];
       
       // Augmenter la tolérance pour éviter les changements trop fréquents
+      // et être moins agressif dans le calcul côté serveur, privilégier les notifications client
       if (currentTrack && safeElapsedSeconds >= (currentTrack.duration + END_TRACK_TOLERANCE)) {
-        console.log(`Track ${currentTrack.title} finished after ${safeElapsedSeconds.toFixed(3)}s. Duration was ${currentTrack.duration}s (with ${END_TRACK_TOLERANCE}s tolerance)`);
+        console.log(`Track ${currentTrack.title} might be finished after ${safeElapsedSeconds.toFixed(3)}s. Metadata duration was ${currentTrack.duration}s (with ${END_TRACK_TOLERANCE}s tolerance)`);
+        
+        // Pour les pistes longues, être plus prudent avec le changement automatique
+        if (currentTrack.duration > 300) { // Plus de 5 minutes
+          console.log('Long track detected. Being more conservative with auto-change.');
+          
+          // Pour les pistes longues, ajouter une tolérance supplémentaire de 5% de la durée
+          const extraTolerance = currentTrack.duration * 0.05;
+          
+          if (safeElapsedSeconds < (currentTrack.duration + END_TRACK_TOLERANCE + extraTolerance)) {
+            console.log(`Waiting for client notification on long track. Not changing automatically yet.`);
+            return state;
+          }
+        }
+        
+        // Si on arrive ici, le serveur va changer de piste (en dernier recours)
+        console.log(`Server is changing track automatically as fallback. Client notification preferred.`);
         
         // Passer à la piste suivante
         const nextIndex = (state.currentTrackIndex + 1) % state.tracks.length;
@@ -335,6 +352,58 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error('[Radio] Erreur lors de la mise à jour de l\'état de lecture:', error);
         return NextResponse.json({ error: "Erreur lors de la mise à jour de l'état" }, { status: 500 });
+      }
+    }
+    
+    // Vérifier si c'est une notification de fin de piste venant du client
+    if (data.action === 'trackEnded' && data.trackId) {
+      console.log(`[Radio] Notification de fin de piste reçue du client pour: ${data.trackId}`);
+      
+      const state = await getRadioState();
+      
+      if (!state) {
+        return NextResponse.json({ error: "État radio non trouvé" }, { status: 404 });
+      }
+      
+      // Vérifier que le trackId correspond à la piste actuelle pour éviter les notifications obsolètes
+      const currentTrack = state.tracks[state.currentTrackIndex];
+      
+      if (currentTrack && currentTrack.cloudinaryPublicId === data.trackId) {
+        console.log('[Radio] Fin de piste confirmée par le client, passage à la piste suivante');
+        
+        // Passer à la piste suivante
+        const nextIndex = (state.currentTrackIndex + 1) % state.tracks.length;
+        state.currentTrackIndex = nextIndex;
+        state.currentTrack = state.tracks[nextIndex];
+        state.position = 0;
+        state.startTime = getServerTime();
+        
+        try {
+          // Mettre à jour l'état dans Redis
+          await redis.set(RADIO_STATE_KEY, state);
+          console.log('[Radio] Passage à la piste suivante (notifié par client), index:', nextIndex);
+          
+          // Si une durée réelle a été fournie, la stocker pour les futures références
+          if (data.actualDuration && currentTrack) {
+            console.log(`[Radio] Durée réelle de piste: ${data.actualDuration}s (metadata: ${currentTrack.duration}s)`);
+            // Ici on pourrait stocker cette information pour améliorer les métadonnées
+          }
+          
+          // Retourner un message de succès
+          return NextResponse.json({
+            success: true,
+            currentTrack: state.currentTrack,
+          });
+        } catch (error) {
+          console.error('[Radio] Erreur lors du changement de piste:', error);
+          return NextResponse.json({ error: "Erreur lors du changement de piste" }, { status: 500 });
+        }
+      } else {
+        console.log('[Radio] Notification de fin de piste ignorée - trackId obsolète ou ne correspond pas à la piste actuelle');
+        return NextResponse.json({
+          success: false,
+          message: "Notification de fin de piste ignorée - piste obsolète",
+        });
       }
     }
     
