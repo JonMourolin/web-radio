@@ -25,7 +25,9 @@ interface StreamStatus {
   trackPosition: number;
 }
 
-export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: StreamPlayerProps) {
+export default function StreamPlayer({ 
+  serverUrl = '' // Nous n'utilisons plus cette prop
+}: StreamPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
@@ -47,7 +49,7 @@ export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: St
   // Récupérer le statut du serveur de streaming
   const fetchStreamStatus = async () => {
     try {
-      const response = await fetch(`${serverUrl}/status`);
+      const response = await fetch(`/api/stream`);
       if (!response.ok) {
         throw new Error(`Erreur serveur: ${response.status}`);
       }
@@ -57,7 +59,7 @@ export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: St
       setError(null);
     } catch (error) {
       console.error('Erreur lors de la récupération du statut:', error);
-      setError('Impossible de se connecter au serveur de streaming.');
+      setError('Impossible de se connecter au service de streaming.');
     } finally {
       setIsLoading(false);
     }
@@ -66,8 +68,10 @@ export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: St
   // Initialiser le lecteur et les mises à jour de statut
   useEffect(() => {
     // Créer l'élément audio s'il n'existe pas
-    if (!audioRef.current) {
-      const audio = new Audio(`${serverUrl}/stream`);
+    if (!audioRef.current && status?.currentTrack?.cloudinaryPublicId) {
+      // Utiliser directement l'URL Cloudinary pour le streaming
+      const cloudinaryUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload/${status.currentTrack.cloudinaryPublicId}`;
+      const audio = new Audio(cloudinaryUrl);
       audio.preload = 'auto';
       audio.volume = volume;
       
@@ -79,6 +83,11 @@ export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: St
         setError('Erreur de lecture du flux audio. Veuillez réessayer.');
         setIsPlaying(false);
       });
+      
+      // Mettre à la bonne position dans la piste
+      if (status.trackPosition) {
+        audio.currentTime = status.trackPosition;
+      }
       
       audioRef.current = audio;
     }
@@ -100,7 +109,30 @@ export default function StreamPlayer({ serverUrl = 'http://localhost:8000' }: St
         audioRef.current.src = '';
       }
     };
-  }, [serverUrl]);
+  }, [volume]);
+  
+  // Mettre à jour l'audio quand le status change
+  useEffect(() => {
+    if (status?.currentTrack?.cloudinaryPublicId && audioRef.current) {
+      // Vérifier si la piste a changé
+      if (audioRef.current.src.indexOf(status.currentTrack.cloudinaryPublicId) === -1) {
+        // Charger la nouvelle piste
+        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload/${status.currentTrack.cloudinaryPublicId}`;
+        audioRef.current.src = cloudinaryUrl;
+        audioRef.current.currentTime = status.trackPosition || 0;
+        
+        // Reprendre la lecture si elle était active
+        if (isPlaying) {
+          audioRef.current.play().catch(error => {
+            console.error('Erreur de lecture:', error);
+          });
+        }
+      } else if (Math.abs((audioRef.current.currentTime || 0) - (status.trackPosition || 0)) > 10) {
+        // Si la différence est trop grande, synchroniser
+        audioRef.current.currentTime = status.trackPosition || 0;
+      }
+    }
+  }, [status, isPlaying]);
   
   // Gérer les changements de volume
   useEffect(() => {
