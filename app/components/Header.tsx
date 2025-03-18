@@ -2,32 +2,60 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Track } from '@/app/types/track';
 
 interface HeaderProps {
   currentPage: 'radio' | 'longmixs';
-  currentTrack?: Track | null;
-  isPlaying?: boolean;
-  volume?: number;
-  onVolumeChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onTogglePlay?: () => void;
 }
 
-export default function Header({
-  currentPage,
-  currentTrack = null,
-  isPlaying = false,
-  volume = 1,
-  onVolumeChange,
-  onTogglePlay
-}: HeaderProps) {
+export default function Header({ currentPage }: HeaderProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [volume, setVolume] = useState(1);
+
+  // Synchroniser l'état avec le player global
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // @ts-ignore
+      if (window.radioPlayer) {
+        // @ts-ignore
+        setIsPlaying(window.radioPlayer.isPlaying);
+        // @ts-ignore
+        setCurrentTrack(window.radioPlayer.currentTrack);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Handler pour le bouton play/pause
+  const handleTogglePlay = () => {
+    // @ts-ignore
+    if (window.radioPlayer) {
+      // @ts-ignore
+      window.radioPlayer.togglePlay();
+    }
+  };
+
+  // Handler pour le changement de volume
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    
+    // @ts-ignore
+    if (window.radioPlayer) {
+      // @ts-ignore
+      window.radioPlayer.setVolume(newVolume);
+    }
+  };
+
   return (
     <header className="h-20 bg-black text-white flex items-center px-6 z-50">
       <div className="flex items-center">
-        {currentPage === 'radio' && onTogglePlay ? (
+        {currentPage === 'radio' ? (
           <button
-            onClick={onTogglePlay}
+            onClick={handleTogglePlay}
             className="flex items-center justify-center mr-4"
           >
             {isPlaying ? (
@@ -78,7 +106,7 @@ export default function Header({
       </div>
 
       {/* Current track info and volume control - push to right */}
-      {currentPage === 'radio' && currentTrack && (
+      {currentTrack && (
         <div className="flex items-center space-x-4 ml-auto">
           <div className="w-12 h-12 bg-gray-800 rounded overflow-hidden">
             {currentTrack.coverUrl ? (
@@ -102,27 +130,25 @@ export default function Header({
           </div>
           
           {/* Volume Control */}
-          {onVolumeChange && (
-            <div className="flex items-center ml-4 space-x-2">
-              <svg className="w-5 h-5 text-[#008F11]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 9v6h4l5 5V4L7 9H3z" />
-              </svg>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={onVolumeChange}
-                className="w-16 h-1 appearance-none bg-gray-700 rounded-full outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#008F11]"
-              />
-            </div>
-          )}
+          <div className="flex items-center ml-4 space-x-2">
+            <svg className="w-5 h-5 text-[#008F11]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3z" />
+            </svg>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="w-16 h-1 appearance-none bg-gray-700 rounded-full outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#008F11]"
+            />
+          </div>
         </div>
       )}
       
-      {/* Push content to right for pages other than radio */}
-      {currentPage !== 'radio' && <div className="ml-auto"></div>}
+      {/* Push content to right when there is no track display */}
+      {!currentTrack && <div className="ml-auto"></div>}
     </header>
   );
 } 

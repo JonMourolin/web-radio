@@ -4,6 +4,17 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.22] - 2024-03-19
+
+### Ajouté
+- Mise en place d'un player audio global persistant à travers toutes les pages
+- Continuité de la lecture lors de la navigation entre sections
+- Communication entre les composants via l'objet global window.radioPlayer
+
+### Corrigé
+- Gestion des erreurs dans l'API /api/stream lorsque state.tracks est undefined
+- Renforcement de la robustesse de l'application en cas d'absence de pistes
+
 ## [0.2.21] - 2024-03-19
 
 ### Amélioré

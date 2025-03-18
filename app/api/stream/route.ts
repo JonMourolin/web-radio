@@ -139,10 +139,23 @@ export async function GET(request: NextRequest) {
     let state = await getRadioState(force);
 
     // Si l'état n'existe pas, en créer un nouveau
-    if (!state) {
-      // Implémenter une fonction pour récupérer les pistes depuis Cloudinary
-      // Pour l'instant, on renvoie un état vide avec un message d'erreur
-      return NextResponse.json({ error: "État radio non trouvé ou erreur Redis" }, { status: 500 });
+    if (!state || !state.tracks || !state.tracks.length) {
+      // Retourner un état par défaut pour éviter les erreurs dans le client
+      return NextResponse.json({
+        currentTrack: null,
+        position: 0,
+        isPlaying: false,
+        nextTracks: [],
+        remainingTime: 0,
+        serverTime: new Date().toISOString(),
+        status: "no_tracks"
+      }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      });
     }
 
     // Calculer la position actuelle basée sur l'heure de début
@@ -153,9 +166,12 @@ export async function GET(request: NextRequest) {
     
     // Prévoir la liste des prochaines pistes
     const nextTracks = [];
-    for (let i = 1; i <= 3; i++) {
-      const nextIndex = (state.currentTrackIndex + i) % state.tracks.length;
-      nextTracks.push(state.tracks[nextIndex]);
+    // Vérifier que tracks existe et a une longueur
+    if (state.tracks && state.tracks.length > 0) {
+      for (let i = 1; i <= 3; i++) {
+        const nextIndex = (state.currentTrackIndex + i) % state.tracks.length;
+        nextTracks.push(state.tracks[nextIndex]);
+      }
     }
     
     // Calculer le temps restant pour la piste actuelle
