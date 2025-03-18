@@ -12,7 +12,8 @@ const nextConfig = {
     domains: ['i.discogs.com', 'res.cloudinary.com'],
   },
   experimental: {
-    serverComponentsExternalPackages: ['@upstash/redis'],
+    // Utilisation de la configuration correcte pour les packages externes
+    serverExternalPackages: ['@upstash/redis'],
   },
   // Configuration explicite du runtime
   serverRuntimeConfig: {

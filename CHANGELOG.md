@@ -4,6 +4,35 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.25] - 2024-03-19
+
+### Amélioré
+- Uniformisation du header entre les pages Radio et Long Mixs
+- Affichage du contrôle de lecture et des métadonnées sur toutes les pages
+- Expérience utilisateur plus cohérente lors de la navigation entre les sections
+
+## [0.2.24] - 2024-03-19
+
+### Amélioré
+- Endpoint `/api/reset-radio` utilise désormais les pistes Cloudinary plutôt que des pistes par défaut
+- Amélioration du script `scripts/reset-radio.js` avec un affichage plus informatif
+- Diagnostic plus complet de l'état de la radio avant réinitialisation
+
+### Corrigé
+- Approche plus directe pour gérer les états Redis corrompus (réinitialisation plutôt que fallback)
+
+## [0.2.23] - 2024-03-19
+
+### Ajouté
+- Endpoint `/api/reset-radio` pour diagnostiquer et réinitialiser l'état de la radio
+- Script `scripts/reset-radio.js` pour faciliter la réinitialisation de l'état radio
+- Pistes par défaut pour assurer le bon fonctionnement même sans pistes utilisateur
+
+### Corrigé
+- Robustesse améliorée face aux états Redis invalides ou manquants
+- Gestion des erreurs dans l'API `/api/stream` avec états de secours
+- Prévention des erreurs "tracks manquants ou index invalide"
+
 ## [0.2.22] - 2024-03-19
 
 ### Ajouté

@@ -1,6 +1,6 @@
 {
   "name": "web-radio",
-  "version": "0.2.14",
+  "version": "0.2.25",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -20,6 +20,7 @@
     "music-metadata": "^11.0.2",
     "next": "15.2.2",
     "next-cloudinary": "^6.16.0",
+    "node-fetch": "^3.3.2",
     "node-id3": "^0.2.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

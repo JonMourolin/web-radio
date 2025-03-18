@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Space_Mono } from "next/font/google";
 import "./globals.css";
-import GlobalPlayerWrapper from "./components/GlobalPlayerWrapper";
+import GlobalPlayerWrapper from "@/app/components/GlobalPlayerWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

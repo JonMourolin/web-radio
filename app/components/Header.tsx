@@ -53,31 +53,25 @@ export default function Header({ currentPage }: HeaderProps) {
   return (
     <header className="h-20 bg-black text-white flex items-center px-6 z-50">
       <div className="flex items-center">
-        {currentPage === 'radio' ? (
-          <button
-            onClick={handleTogglePlay}
-            className="flex items-center justify-center mr-4"
-          >
-            {isPlaying ? (
-              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
-        ) : (
-          <Link href="/" className="mr-6">
-            <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
-          </Link>
-        )}
+        {/* Bouton Play/Pause sur toutes les pages */}
+        <button
+          onClick={handleTogglePlay}
+          className="flex items-center justify-center mr-4"
+        >
+          {isPlaying ? (
+            <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
+              <rect x="6" y="4" width="4" height="16" rx="1" />
+              <rect x="14" y="4" width="4" height="16" rx="1" />
+            </svg>
+          ) : (
+            <svg className="w-14 h-14" viewBox="0 0 24 24" fill="#008F11">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
 
-        {currentPage === 'radio' && (
-          <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
-        )}
+        {/* Titre du site */}
+        <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
       </div>
 
       {/* Navigation Links */}

@@ -47,6 +47,30 @@ const getServerTime = () => {
   return new Date();
 };
 
+// Pistes par défaut pour initialiser l'état si nécessaire
+const defaultTracks = [
+  {
+    filename: "default-track-1.mp3",
+    title: "Default Track 1",
+    artist: "Radio Artist",
+    album: "Default Album",
+    duration: 180,
+    cloudinaryUrl: "https://res.cloudinary.com/dyom5zfbh/video/upload/v1710572802/web-radio/tracks/sample-15s_z4wr4o.mp3",
+    cloudinaryPublicId: "web-radio/tracks/sample-15s_z4wr4o",
+    coverUrl: "https://res.cloudinary.com/dyom5zfbh/image/upload/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg"
+  },
+  {
+    filename: "default-track-2.mp3",
+    title: "Default Track 2",
+    artist: "Radio Artist",
+    album: "Default Album",
+    duration: 180,
+    cloudinaryUrl: "https://res.cloudinary.com/dyom5zfbh/video/upload/v1710572802/web-radio/tracks/sample-15s_z4wr4o.mp3",
+    cloudinaryPublicId: "web-radio/tracks/sample-15s_z4wr4o",
+    coverUrl: "https://res.cloudinary.com/dyom5zfbh/image/upload/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg"
+  }
+];
+
 // Fonction de récupération de l'état radio avec gestion des erreurs et timeout
 async function getRadioState(force = false): Promise<RadioState | null> {
   try {
@@ -63,13 +87,60 @@ async function getRadioState(force = false): Promise<RadioState | null> {
       })
     ]);
 
-    if (!state) {
-      console.log('[Radio] État non trouvé ou timeout dépassé, création d\'un nouvel état');
-      return null;
+    // Si l'état n'existe pas ou est invalide, créer un état par défaut
+    if (!state || !state.tracks || !Array.isArray(state.tracks) || state.tracks.length === 0) {
+      console.log('[Radio] État non trouvé ou invalide, création d\'un nouvel état par défaut');
+      
+      // Créer un nouvel état avec les pistes par défaut
+      const defaultState: RadioState = {
+        currentTrack: defaultTracks[0],
+        position: 0,
+        startTime: getServerTime(),
+        isPlaying: true,
+        tracks: defaultTracks,
+        currentTrackIndex: 0,
+        lastChecked: getServerTime(),
+      };
+      
+      // Sauvegarder immédiatement dans Redis
+      try {
+        await redis.set(RADIO_STATE_KEY, defaultState);
+        console.log('[Radio] État par défaut enregistré avec succès');
+        return defaultState;
+      } catch (saveError) {
+        console.error('[Radio] Erreur lors de la sauvegarde de l\'état par défaut:', saveError);
+        // Retourner l'état par défaut même en cas d'erreur Redis
+        return defaultState;
+      }
     }
 
     console.log('[Radio] État récupéré: Trouvé');
     console.log('[Radio] État récupéré:', state.tracks?.length || 0, 'pistes, piste actuelle:', state.currentTrackIndex);
+    
+    // Vérifier si l'état est cohérent
+    if (!state.tracks || state.currentTrackIndex < 0 || state.currentTrackIndex >= state.tracks.length) {
+      console.log('[Radio] État incohérent, réinitialisation avec pistes par défaut');
+      
+      // Réinitialiser l'état avec les pistes par défaut
+      const fixedState: RadioState = {
+        currentTrack: defaultTracks[0],
+        position: 0,
+        startTime: getServerTime(),
+        isPlaying: true,
+        tracks: defaultTracks,
+        currentTrackIndex: 0,
+        lastChecked: getServerTime(),
+      };
+      
+      try {
+        await redis.set(RADIO_STATE_KEY, fixedState);
+        console.log('[Radio] État corrigé enregistré avec succès');
+      } catch (saveError) {
+        console.error('[Radio] Erreur lors de la sauvegarde de l\'état corrigé:', saveError);
+      }
+      
+      return fixedState;
+    }
     
     // Vérifier si une mise à jour de la position est nécessaire
     const now = getServerTime();
@@ -123,7 +194,19 @@ async function getRadioState(force = false): Promise<RadioState | null> {
     return state;
   } catch (error) {
     console.error('[Radio] Erreur lors de la récupération de l\'état:', error);
-    return null;
+    
+    // En cas d'erreur, retourner un état par défaut
+    const fallbackState: RadioState = {
+      currentTrack: defaultTracks[0],
+      position: 0,
+      startTime: getServerTime(),
+      isPlaying: true,
+      tracks: defaultTracks,
+      currentTrackIndex: 0,
+      lastChecked: getServerTime(),
+    };
+    
+    return fallbackState;
   }
 }
 
@@ -138,17 +221,18 @@ export async function GET(request: NextRequest) {
     // Récupérer l'état depuis Redis
     let state = await getRadioState(force);
 
-    // Si l'état n'existe pas, en créer un nouveau
-    if (!state || !state.tracks || !state.tracks.length) {
-      // Retourner un état par défaut pour éviter les erreurs dans le client
+    // Si l'état n'existe toujours pas malgré nos efforts, créer un état minimal
+    if (!state) {
+      console.log('[Radio] Impossible de récupérer ou créer un état, retour d\'un état minimal');
+      
       return NextResponse.json({
-        currentTrack: null,
+        currentTrack: defaultTracks[0],
         position: 0,
-        isPlaying: false,
+        isPlaying: true,
         nextTracks: [],
-        remainingTime: 0,
+        remainingTime: 180,
         serverTime: new Date().toISOString(),
-        status: "no_tracks"
+        status: "fallback_state"
       }, {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -194,7 +278,23 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Radio] Erreur dans la route GET:', error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    
+    // En cas d'erreur grave, retourner un état minimal de secours
+    return NextResponse.json({
+      currentTrack: defaultTracks[0],
+      position: 0,
+      isPlaying: true,
+      nextTracks: [],
+      remainingTime: 180,
+      serverTime: new Date().toISOString(),
+      status: "error_state"
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   }
 }
 
