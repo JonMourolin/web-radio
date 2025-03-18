@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Track } from '@/app/types/track';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface MainLayoutProps {
   tracks: Track[];
@@ -162,6 +163,23 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
           <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
         </div>
 
+        {/* Navigation Links */}
+        <div className="flex items-center mx-6">
+          <span className="text-[#00FF41] font-doto mr-4">Radio</span>
+          <Link 
+            href="/longmixs" 
+            className="text-[#008F11] hover:text-[#00FF41] font-doto mr-4"
+          >
+            Long Mixs
+          </Link>
+          <Link 
+            href="/playlist" 
+            className="text-[#008F11] hover:text-[#00FF41] font-doto"
+          >
+            Playlist
+          </Link>
+        </div>
+
         {/* Current track info in header - push to right */}
         <div className="flex items-center space-x-4 ml-auto">
           {currentTrack && (
@@ -224,7 +242,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.18 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.19 - Vercel KV</p>
       </footer>
 
       {/* Hidden Audio Player */}

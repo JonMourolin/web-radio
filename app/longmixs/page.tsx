@@ -74,7 +74,13 @@ export default function LongMixsPage() {
           >
             Radio
           </Link>
-          <span className="text-[#00FF41] font-doto">Long Mixs</span>
+          <span className="text-[#00FF41] font-doto mr-4">Long Mixs</span>
+          <Link 
+            href="/playlist" 
+            className="text-[#008F11] hover:text-[#00FF41] font-doto"
+          >
+            Playlist
+          </Link>
         </div>
       </header>
 
@@ -112,7 +118,7 @@ export default function LongMixsPage() {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.18 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.19 - Vercel KV</p>
       </footer>
     </div>
   );
