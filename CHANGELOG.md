@@ -4,6 +4,15 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.29] - 2024-03-19
+
+### Corrigé
+- Correction critique du problème de redémarrage constant du son
+- Amélioration de la détection des changements de piste pour éviter les faux positifs
+- Comparaison des URLs audio en plus des identifiants de piste pour une meilleure fiabilité
+- Augmentation des seuils de tolérance pour les corrections de position (15 secondes)
+- Augmentation du délai entre les ajustements de position (20 secondes minimum)
+
 ## [0.2.28] - 2024-03-19
 
 ### Amélioré

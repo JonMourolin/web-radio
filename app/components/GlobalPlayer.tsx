@@ -41,6 +41,9 @@ export default function GlobalPlayer() {
       }
       lastSyncTimeRef.current = now;
       
+      // Sauvegarder l'URL actuelle pour comparaison
+      const currentUrl = audioRef.current?.src || '';
+      
       const response = await fetch('/api/stream');
       if (!response.ok) throw new Error('Failed to fetch radio state');
       const data = await response.json();
@@ -51,97 +54,98 @@ export default function GlobalPlayer() {
         return;
       }
       
-      // Vérifier si la piste a changé
+      // Vérifier si la piste a changé en comparant l'URL complète
       const newTrackId = data.currentTrack?.cloudinaryPublicId;
-      const trackChanged = newTrackId !== lastTrackId;
+      const newTrackUrl = data.currentTrack?.cloudinaryUrl || '';
       
-      if (trackChanged && newTrackId) {
-        console.log('Track changed from', lastTrackId, 'to', newTrackId);
+      // Empêcher les faux changements de piste lors des rechargements rapides
+      const trackReallyChanged = newTrackUrl && currentUrl && newTrackUrl !== currentUrl && newTrackId !== lastTrackId;
+      
+      if (trackReallyChanged || (lastTrackId === null && newTrackId)) {
+        // Cas 1: La piste a vraiment changé OU Cas 2: Premier chargement
+        const isFirstLoad = lastTrackId === null;
+        
+        if (!isFirstLoad) {
+          console.log('Track REALLY changed from', lastTrackId, 'to', newTrackId);
+        } else {
+          console.log('Initial track load:', newTrackId);
+        }
+        
+        // Toujours mettre à jour l'ID de la dernière piste
         setLastTrackId(newTrackId);
         
-        // Seulement si la piste a changé, on met à jour l'audio
-        if (audioRef.current) {
+        if (audioRef.current && newTrackUrl) {
           const wasPlaying = !audioRef.current.paused && !localPause;
-          console.log('Loading new track URL:', data.currentTrack.cloudinaryUrl);
+          
+          if (!isFirstLoad) {
+            console.log('Loading new track URL:', newTrackUrl);
+          } else {
+            console.log('Initializing audio with URL:', newTrackUrl);
+          }
           console.log('Setting position to:', data.position);
           
-          // Charger la nouvelle piste sans déclencher la lecture immédiate
-          audioRef.current.pause();
-          audioRef.current.src = data.currentTrack.cloudinaryUrl;
-          
-          // Réinitialiser les flags de position
+          // Étape 1: Marquer que nous sommes en train d'ajuster l'audio pour éviter les callbacks en boucle
           isAdjustingPositionRef.current = true;
           
-          // Attendre que les métadonnées soient chargées avant de définir la position
-          const setPositionWhenReady = () => {
+          // Étape 2: Définir une fonction qui sera utilisée après le chargement des métadonnées
+          const handleAudioLoaded = () => {
             try {
-              audioRef.current!.currentTime = data.position;
-              lastPositionUpdateRef.current = data.position;
-              
-              // Attendre un peu avant de reprendre la lecture
-              setTimeout(() => {
-                if (wasPlaying && audioRef.current) {
-                  console.log('Resuming playback of new track after buffer');
-                  audioRef.current.play().catch(console.error);
+              // Étape 3: Définir la position une fois les métadonnées chargées
+              if (audioRef.current) {
+                audioRef.current.currentTime = data.position;
+                lastPositionUpdateRef.current = data.position;
+                
+                // Étape 4: Reprendre la lecture avec un délai pour stabiliser
+                if ((wasPlaying || data.isPlaying) && !localPause) {
+                  setTimeout(() => {
+                    if (audioRef.current) {
+                      console.log('Resuming playback after metadata loaded, position:', audioRef.current.currentTime);
+                      audioRef.current.play().catch(err => {
+                        console.error('Failed to play audio:', err);
+                      });
+                    }
+                    isAdjustingPositionRef.current = false;
+                  }, 500); // Délai plus long de 500ms
+                } else {
+                  isAdjustingPositionRef.current = false;
                 }
-                isAdjustingPositionRef.current = false;
-              }, 300);
+                
+                if (isFirstLoad) {
+                  audioInitializedRef.current = true;
+                }
+              }
             } catch (err) {
               console.error('Error setting position:', err);
               isAdjustingPositionRef.current = false;
             }
           };
           
-          if (audioRef.current.readyState >= 2) {
-            setPositionWhenReady();
-          } else {
-            audioRef.current.addEventListener('loadedmetadata', setPositionWhenReady, { once: true });
-          }
-        }
-      } else if (lastTrackId === null && newTrackId) {
-        // Premier chargement
-        console.log('Initial track load:', newTrackId);
-        setLastTrackId(newTrackId);
-        
-        // Initialiser l'audio avec la piste actuelle
-        if (audioRef.current && data.currentTrack.cloudinaryUrl && !audioInitializedRef.current) {
-          console.log('Initializing audio with URL:', data.currentTrack.cloudinaryUrl);
-          console.log('Initial position:', data.position);
+          // Étape 5: Configurer la source audio et attacher l'événement
+          // Important: pause avant de changer la source pour éviter des lectures automatiques
+          audioRef.current.pause();
           
-          audioRef.current.src = data.currentTrack.cloudinaryUrl;
-          
-          // Attendre que les métadonnées soient chargées avant de définir la position
-          const initializePosition = () => {
-            try {
-              audioRef.current!.currentTime = data.position;
-              lastPositionUpdateRef.current = data.position;
-              audioInitializedRef.current = true;
-              
-              // Si la radio est en lecture, démarrer l'audio après un court délai
-              if (data.isPlaying && !localPause) {
-                setTimeout(() => {
-                  console.log('Starting initial playback');
-                  audioRef.current?.play().catch(console.error);
-                }, 300);
-              }
-            } catch (err) {
-              console.error('Error setting initial position:', err);
+          // Vérifier si l'URL est réellement différente avant de la changer
+          if (audioRef.current.src !== newTrackUrl) {
+            audioRef.current.src = newTrackUrl;
+            
+            // N'attacher l'événement que si nous devons charger une nouvelle URL
+            if (audioRef.current.readyState >= 2) {
+              handleAudioLoaded();
+            } else {
+              audioRef.current.addEventListener('loadedmetadata', handleAudioLoaded, { once: true });
             }
-          };
-          
-          if (audioRef.current.readyState >= 2) {
-            initializePosition();
           } else {
-            audioRef.current.addEventListener('loadedmetadata', initializePosition, { once: true });
+            // Même URL mais mise à jour de position nécessaire
+            handleAudioLoaded();
           }
         }
-      } else {
+      } else if (newTrackId === lastTrackId) {
         // Même piste, on ajuste juste la position si nécessaire et si on n'est pas déjà en train d'ajuster
         if (
           audioRef.current && 
           !isAdjustingPositionRef.current && 
-          Math.abs(audioRef.current.currentTime - data.position) > 10 && // Augmentation du seuil à 10 secondes
-          now - lastPositionUpdateRef.current > 15000 // Au maximum une mise à jour toutes les 15 secondes
+          Math.abs(audioRef.current.currentTime - data.position) > 15 && // Seuil encore plus élevé (15 secondes)
+          now - lastPositionUpdateRef.current > 20000 // Au moins 20 secondes entre les ajustements
         ) {
           console.log('Significant drift detected. Adjusting position from', audioRef.current.currentTime, 'to', data.position);
           isAdjustingPositionRef.current = true;
@@ -162,6 +166,7 @@ export default function GlobalPlayer() {
         }
       }
       
+      // Toujours mettre à jour l'état de la radio
       setRadioState(data);
       
       // Ne pas modifier l'état de lecture si l'utilisateur a mis en pause manuellement
@@ -175,11 +180,11 @@ export default function GlobalPlayer() {
 
   // Initialize and periodically update radio state
   useEffect(() => {
-    // Initial fetch with a slight delay to allow the audio element to initialize
-    setTimeout(fetchRadioState, 500);
+    // Initial fetch with a longer delay to allow the audio element to initialize
+    setTimeout(fetchRadioState, 1000);
     
-    // Set up polling interval with increased delay (8 seconds instead of 5)
-    pollingRef.current = setInterval(fetchRadioState, 8000);
+    // Set up polling interval with increased delay (10 secondes)
+    pollingRef.current = setInterval(fetchRadioState, 10000);
     
     // Clean up on unmount
     return () => {
@@ -212,7 +217,8 @@ export default function GlobalPlayer() {
   const handleTrackEnd = () => {
     // Quand une piste se termine, on force une mise à jour immédiate
     console.log('Track ended naturally, requesting next track');
-    fetchRadioState();
+    // Attendre un peu avant de recharger l'état pour éviter les conflits
+    setTimeout(fetchRadioState, 500);
   };
 
   // Créer l'élément audio une seule fois
