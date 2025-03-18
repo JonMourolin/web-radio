@@ -4,6 +4,19 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.28] - 2024-03-19
+
+### Amélioré
+- Optimisation majeure de la gestion audio pour éviter les sauts et coupures
+- Mise en tampon (buffering) des pistes audio avant lecture pour une meilleure stabilité
+- Réduction des changements de position trop fréquents
+- Meilleure gestion des transitions entre les pistes
+
+### Corrigé
+- Résolution du problème de sauts audio et retours au début
+- Correction des erreurs lors du chargement des métadonnées audio
+- Prévention des erreurs de position négative
+
 ## [0.2.27] - 2024-03-19
 
 ### Amélioré

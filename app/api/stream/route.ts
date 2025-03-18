@@ -152,7 +152,8 @@ async function getRadioState(force = false): Promise<RadioState | null> {
     const now = getServerTime();
     
     // Si force=true ou si la dernière vérification date d'il y a plus de 5 secondes
-    if (force || new Date(lastTrackCheck).getTime() + 5000 < now.getTime()) {
+    // Augmenter le délai minimum entre les vérifications pour réduire les sauts
+    if (force || new Date(lastTrackCheck).getTime() + 8000 < now.getTime()) {
       console.log('[Radio] Vérification de l\'avancement de la piste (dernier contrôle:', lastTrackCheck, ')');
       
       // Vérifier si la piste en cours est terminée en calculant la position actuelle
@@ -168,16 +169,19 @@ async function getRadioState(force = false): Promise<RadioState | null> {
       
       const elapsedSeconds = (now.getTime() - new Date(state.startTime).getTime()) / 1000;
       
+      // Empêcher les valeurs négatives pour éviter des comportements bizarres
+      const safeElapsedSeconds = Math.max(0, elapsedSeconds);
+      
       // Mettre à jour la position dans l'état
-      state.position = elapsedSeconds;
+      state.position = safeElapsedSeconds;
       state.lastChecked = now;
       
       // Vérifier si la piste est terminée et passer à la suivante si nécessaire
       const currentTrack = state.tracks[state.currentTrackIndex];
       
-      // Utiliser la tolérance pour laisser la piste finir naturellement
-      if (currentTrack && elapsedSeconds >= (currentTrack.duration + END_TRACK_TOLERANCE)) {
-        console.log(`Track ${currentTrack.title} finished after ${elapsedSeconds.toFixed(3)}s. Duration was ${currentTrack.duration}s (with ${END_TRACK_TOLERANCE}s tolerance)`);
+      // Augmenter la tolérance pour éviter les changements trop fréquents
+      if (currentTrack && safeElapsedSeconds >= (currentTrack.duration + END_TRACK_TOLERANCE)) {
+        console.log(`Track ${currentTrack.title} finished after ${safeElapsedSeconds.toFixed(3)}s. Duration was ${currentTrack.duration}s (with ${END_TRACK_TOLERANCE}s tolerance)`);
         
         // Passer à la piste suivante
         const nextIndex = (state.currentTrackIndex + 1) % state.tracks.length;
@@ -253,63 +257,54 @@ export async function GET(request: NextRequest) {
           'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
           'Pragma': 'no-cache',
           'Expires': '0',
-        },
+        }
       });
     }
 
-    // Calculer la position actuelle basée sur l'heure de début
-    const now = getServerTime();
-    const startTime = new Date(state.startTime);
-    const elapsedSeconds = (now.getTime() - startTime.getTime()) / 1000;
-    const position = Math.min(elapsedSeconds, state.currentTrack?.duration || 0);
-    
-    // Prévoir la liste des prochaines pistes
+    // S'assurer que l'état contient une piste actuelle
+    if (!state.currentTrack && state.tracks && state.tracks.length > 0) {
+      state.currentTrack = state.tracks[state.currentTrackIndex];
+    }
+
+    // Calculer le temps restant
+    const currentTrack = state.currentTrack;
+    const remainingTime = currentTrack 
+      ? Math.max(0, currentTrack.duration - state.position)
+      : 0;
+
+    // Préparer les pistes suivantes (max 3)
     const nextTracks = [];
-    // Vérifier que tracks existe et a une longueur
-    if (state.tracks && state.tracks.length > 0) {
+    if (state.tracks && state.tracks.length > 1) {
       for (let i = 1; i <= 3; i++) {
         const nextIndex = (state.currentTrackIndex + i) % state.tracks.length;
         nextTracks.push(state.tracks[nextIndex]);
       }
     }
-    
-    // Calculer le temps restant pour la piste actuelle
-    const remainingTime = (state.currentTrack?.duration || 0) - position;
 
-    // Retourner les informations pertinentes au client
-    return NextResponse.json({
+    // Retourner l'état formaté pour le client
+    const clientState = {
       currentTrack: state.currentTrack,
-      position,
+      position: parseFloat(state.position.toFixed(2)), // Arrondir pour éviter des décimales infinies
       isPlaying: state.isPlaying,
       nextTracks,
       remainingTime,
-      serverTime: now.toISOString(),
-    }, {
+      serverTime: getServerTime().toISOString()
+    };
+
+    return NextResponse.json(clientState, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
-      },
+      }
     });
   } catch (error) {
-    console.error('[Radio] Erreur dans la route GET:', error);
+    console.error('[Radio] Erreur dans la route GET /api/stream:', error);
     
-    // En cas d'erreur grave, retourner un état minimal de secours
     return NextResponse.json({
-      currentTrack: defaultTracks[0],
-      position: 0,
-      isPlaying: true,
-      nextTracks: [],
-      remainingTime: 180,
-      serverTime: new Date().toISOString(),
-      status: "error_state"
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+      error: 'Erreur serveur',
+      status: "error"
+    }, { status: 500 });
   }
 }
 

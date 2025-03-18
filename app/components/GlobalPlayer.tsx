@@ -24,6 +24,9 @@ export default function GlobalPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const audioInitializedRef = useRef(false);
+  const lastPositionUpdateRef = useRef<number>(0);
+  const isAdjustingPositionRef = useRef<boolean>(false);
+  const lastSyncTimeRef = useRef<number>(Date.now());
   
   // Get current track from radio state
   const currentTrack = radioState?.currentTrack || null;
@@ -31,6 +34,13 @@ export default function GlobalPlayer() {
   // Fetch radio state from server
   const fetchRadioState = async () => {
     try {
+      // Éviter les mises à jour trop fréquentes
+      const now = Date.now();
+      if (now - lastSyncTimeRef.current < 4000) {
+        return; // Ne pas mettre à jour si la dernière mise à jour date de moins de 4 secondes
+      }
+      lastSyncTimeRef.current = now;
+      
       const response = await fetch('/api/stream');
       if (!response.ok) throw new Error('Failed to fetch radio state');
       const data = await response.json();
@@ -55,13 +65,37 @@ export default function GlobalPlayer() {
           console.log('Loading new track URL:', data.currentTrack.cloudinaryUrl);
           console.log('Setting position to:', data.position);
           
+          // Charger la nouvelle piste sans déclencher la lecture immédiate
+          audioRef.current.pause();
           audioRef.current.src = data.currentTrack.cloudinaryUrl;
-          audioRef.current.currentTime = data.position;
-          audioRef.current.volume = volume;
           
-          if (wasPlaying) {
-            console.log('Resuming playback of new track');
-            audioRef.current.play().catch(console.error);
+          // Réinitialiser les flags de position
+          isAdjustingPositionRef.current = true;
+          
+          // Attendre que les métadonnées soient chargées avant de définir la position
+          const setPositionWhenReady = () => {
+            try {
+              audioRef.current!.currentTime = data.position;
+              lastPositionUpdateRef.current = data.position;
+              
+              // Attendre un peu avant de reprendre la lecture
+              setTimeout(() => {
+                if (wasPlaying && audioRef.current) {
+                  console.log('Resuming playback of new track after buffer');
+                  audioRef.current.play().catch(console.error);
+                }
+                isAdjustingPositionRef.current = false;
+              }, 300);
+            } catch (err) {
+              console.error('Error setting position:', err);
+              isAdjustingPositionRef.current = false;
+            }
+          };
+          
+          if (audioRef.current.readyState >= 2) {
+            setPositionWhenReady();
+          } else {
+            audioRef.current.addEventListener('loadedmetadata', setPositionWhenReady, { once: true });
           }
         }
       } else if (lastTrackId === null && newTrackId) {
@@ -75,22 +109,56 @@ export default function GlobalPlayer() {
           console.log('Initial position:', data.position);
           
           audioRef.current.src = data.currentTrack.cloudinaryUrl;
-          audioRef.current.currentTime = data.position;
-          audioRef.current.volume = volume;
-          audioInitializedRef.current = true;
           
-          // Si la radio est en lecture, démarrer l'audio
-          if (data.isPlaying && !localPause) {
-            console.log('Starting initial playback');
-            audioRef.current.play().catch(console.error);
+          // Attendre que les métadonnées soient chargées avant de définir la position
+          const initializePosition = () => {
+            try {
+              audioRef.current!.currentTime = data.position;
+              lastPositionUpdateRef.current = data.position;
+              audioInitializedRef.current = true;
+              
+              // Si la radio est en lecture, démarrer l'audio après un court délai
+              if (data.isPlaying && !localPause) {
+                setTimeout(() => {
+                  console.log('Starting initial playback');
+                  audioRef.current?.play().catch(console.error);
+                }, 300);
+              }
+            } catch (err) {
+              console.error('Error setting initial position:', err);
+            }
+          };
+          
+          if (audioRef.current.readyState >= 2) {
+            initializePosition();
+          } else {
+            audioRef.current.addEventListener('loadedmetadata', initializePosition, { once: true });
           }
         }
       } else {
-        // Même piste, on ajuste juste la position si nécessaire
-        if (audioRef.current && Math.abs(audioRef.current.currentTime - data.position) > 5) {
-          // Seulement si le décalage est important (> 5 secondes)
-          console.log('Adjusting position from', audioRef.current.currentTime, 'to', data.position);
-          audioRef.current.currentTime = data.position;
+        // Même piste, on ajuste juste la position si nécessaire et si on n'est pas déjà en train d'ajuster
+        if (
+          audioRef.current && 
+          !isAdjustingPositionRef.current && 
+          Math.abs(audioRef.current.currentTime - data.position) > 10 && // Augmentation du seuil à 10 secondes
+          now - lastPositionUpdateRef.current > 15000 // Au maximum une mise à jour toutes les 15 secondes
+        ) {
+          console.log('Significant drift detected. Adjusting position from', audioRef.current.currentTime, 'to', data.position);
+          isAdjustingPositionRef.current = true;
+          
+          // Attendre que l'audio soit dans un état stable
+          setTimeout(() => {
+            try {
+              if (audioRef.current) {
+                audioRef.current.currentTime = data.position;
+                lastPositionUpdateRef.current = now;
+              }
+            } catch (err) {
+              console.error('Error adjusting position:', err);
+            } finally {
+              isAdjustingPositionRef.current = false;
+            }
+          }, 300);
         }
       }
       
@@ -107,11 +175,11 @@ export default function GlobalPlayer() {
 
   // Initialize and periodically update radio state
   useEffect(() => {
-    // Initial fetch
-    fetchRadioState();
+    // Initial fetch with a slight delay to allow the audio element to initialize
+    setTimeout(fetchRadioState, 500);
     
-    // Set up polling interval (every 5 seconds instead of 10)
-    pollingRef.current = setInterval(fetchRadioState, 5000);
+    // Set up polling interval with increased delay (8 seconds instead of 5)
+    pollingRef.current = setInterval(fetchRadioState, 8000);
     
     // Clean up on unmount
     return () => {
@@ -126,7 +194,7 @@ export default function GlobalPlayer() {
     if (!audioRef.current || !radioState || !currentTrack) return;
     
     // Play or pause based on radio state and local pause state
-    if (isPlaying && !localPause && audioRef.current.paused) {
+    if (isPlaying && !localPause && audioRef.current.paused && !isAdjustingPositionRef.current) {
       audioRef.current.play().catch(console.error);
     } else if ((!isPlaying || localPause) && !audioRef.current.paused) {
       audioRef.current.pause();
@@ -143,6 +211,7 @@ export default function GlobalPlayer() {
   // Handle track end
   const handleTrackEnd = () => {
     // Quand une piste se termine, on force une mise à jour immédiate
+    console.log('Track ended naturally, requesting next track');
     fetchRadioState();
   };
 
@@ -152,6 +221,15 @@ export default function GlobalPlayer() {
       audioRef.current = new Audio();
       audioRef.current.volume = volume;
       audioRef.current.onended = handleTrackEnd;
+      
+      // Ajouter des gestionnaires pour surveiller les erreurs et sauts
+      audioRef.current.onerror = (e) => {
+        console.error('Audio playback error:', e);
+      };
+      
+      audioRef.current.onstalled = () => {
+        console.warn('Audio playback stalled');
+      };
     }
     
     return () => {
@@ -159,6 +237,8 @@ export default function GlobalPlayer() {
         audioRef.current.pause();
         audioRef.current.src = '';
         audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+        audioRef.current.onstalled = null;
         audioRef.current = null;
       }
     };
