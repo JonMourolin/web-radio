@@ -20,8 +20,10 @@ export default function GlobalPlayer() {
   const [radioState, setRadioState] = useState<RadioState | null>(null);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
   const [localPause, setLocalPause] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [volume, setVolume] = useState(1);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const audioInitializedRef = useRef(false);
   
   // Get current track from radio state
   const currentTrack = radioState?.currentTrack || null;
@@ -41,33 +43,45 @@ export default function GlobalPlayer() {
       
       // Vérifier si la piste a changé
       const newTrackId = data.currentTrack?.cloudinaryPublicId;
-      const trackChanged = newTrackId !== lastTrackId && lastTrackId !== null;
+      const trackChanged = newTrackId !== lastTrackId;
       
       if (trackChanged && newTrackId) {
-        console.log('Track changed, loading new track');
+        console.log('Track changed from', lastTrackId, 'to', newTrackId);
         setLastTrackId(newTrackId);
         
         // Seulement si la piste a changé, on met à jour l'audio
         if (audioRef.current) {
           const wasPlaying = !audioRef.current.paused && !localPause;
+          console.log('Loading new track URL:', data.currentTrack.cloudinaryUrl);
+          console.log('Setting position to:', data.position);
+          
           audioRef.current.src = data.currentTrack.cloudinaryUrl;
           audioRef.current.currentTime = data.position;
+          audioRef.current.volume = volume;
           
           if (wasPlaying) {
+            console.log('Resuming playback of new track');
             audioRef.current.play().catch(console.error);
           }
         }
       } else if (lastTrackId === null && newTrackId) {
         // Premier chargement
+        console.log('Initial track load:', newTrackId);
         setLastTrackId(newTrackId);
         
         // Initialiser l'audio avec la piste actuelle
-        if (audioRef.current && data.currentTrack.cloudinaryUrl) {
+        if (audioRef.current && data.currentTrack.cloudinaryUrl && !audioInitializedRef.current) {
+          console.log('Initializing audio with URL:', data.currentTrack.cloudinaryUrl);
+          console.log('Initial position:', data.position);
+          
           audioRef.current.src = data.currentTrack.cloudinaryUrl;
           audioRef.current.currentTime = data.position;
+          audioRef.current.volume = volume;
+          audioInitializedRef.current = true;
           
           // Si la radio est en lecture, démarrer l'audio
           if (data.isPlaying && !localPause) {
+            console.log('Starting initial playback');
             audioRef.current.play().catch(console.error);
           }
         }
@@ -75,6 +89,7 @@ export default function GlobalPlayer() {
         // Même piste, on ajuste juste la position si nécessaire
         if (audioRef.current && Math.abs(audioRef.current.currentTime - data.position) > 5) {
           // Seulement si le décalage est important (> 5 secondes)
+          console.log('Adjusting position from', audioRef.current.currentTime, 'to', data.position);
           audioRef.current.currentTime = data.position;
         }
       }
@@ -95,8 +110,8 @@ export default function GlobalPlayer() {
     // Initial fetch
     fetchRadioState();
     
-    // Set up polling interval (every 10 seconds)
-    pollingRef.current = setInterval(fetchRadioState, 10000);
+    // Set up polling interval (every 5 seconds instead of 10)
+    pollingRef.current = setInterval(fetchRadioState, 5000);
     
     // Clean up on unmount
     return () => {
@@ -118,11 +133,36 @@ export default function GlobalPlayer() {
     }
   }, [radioState, currentTrack, isPlaying, localPause]);
 
+  // Handle volume change
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
   // Handle track end
   const handleTrackEnd = () => {
     // Quand une piste se termine, on force une mise à jour immédiate
     fetchRadioState();
   };
+
+  // Créer l'élément audio une seule fois
+  useEffect(() => {
+    if (!audioRef.current && typeof Audio !== 'undefined') {
+      audioRef.current = new Audio();
+      audioRef.current.volume = volume;
+      audioRef.current.onended = handleTrackEnd;
+    }
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.onended = null;
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Exposer l'état et les fonctions au contexte global (window)
   useEffect(() => {
@@ -131,6 +171,7 @@ export default function GlobalPlayer() {
     window.radioPlayer = {
       isPlaying,
       currentTrack,
+      volume,
       togglePlay: () => {
         if (audioRef.current) {
           if (isPlaying) {
@@ -143,9 +184,59 @@ export default function GlobalPlayer() {
           setIsPlaying(!isPlaying);
         }
       },
-      setVolume: (volume: number) => {
+      setVolume: (newVolume: number) => {
+        setVolume(newVolume);
         if (audioRef.current) {
-          audioRef.current.volume = volume;
+          audioRef.current.volume = newVolume;
+        }
+      },
+      // Ajouter une fonction de diagnostic pour inspecter et réparer l'état
+      diagnose: async () => {
+        console.log('--- Diagnostic Radio State ---');
+        console.log('Current Track ID:', lastTrackId);
+        console.log('Current Track:', currentTrack);
+        console.log('Is Playing:', isPlaying);
+        console.log('Local Pause:', localPause);
+        
+        if (audioRef.current) {
+          console.log('Audio Current Time:', audioRef.current.currentTime);
+          console.log('Audio Duration:', audioRef.current.duration);
+          console.log('Audio Paused:', audioRef.current.paused);
+          console.log('Audio Source:', audioRef.current.src);
+        } else {
+          console.log('Audio element not initialized');
+        }
+        
+        // Forcer une mise à jour immédiate de l'état
+        console.log('Forcing state update...');
+        const response = await fetch('/api/stream?force=true');
+        const data = await response.json();
+        console.log('Server Response:', data);
+        
+        return "Diagnostic completed. Check console for details.";
+      },
+      // Ajouter une fonction pour forcer le passage à la piste suivante
+      nextTrack: async () => {
+        console.log('Forcing next track...');
+        try {
+          const response = await fetch('/api/stream', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'nextTrack' })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to change track');
+          }
+          
+          console.log('Track change requested, refreshing state...');
+          fetchRadioState();
+          return "Track change requested.";
+        } catch (error) {
+          console.error('Error changing track:', error);
+          return "Error changing track. See console.";
         }
       }
     };
@@ -154,19 +245,7 @@ export default function GlobalPlayer() {
       // @ts-ignore
       delete window.radioPlayer;
     };
-  }, [isPlaying, currentTrack]);
+  }, [isPlaying, currentTrack, volume, lastTrackId, localPause]);
 
-  return (
-    <>
-      {currentTrack?.cloudinaryUrl && (
-        <audio
-          ref={audioRef}
-          src={currentTrack.cloudinaryUrl}
-          onEnded={handleTrackEnd}
-          hidden
-          preload="auto"
-        />
-      )}
-    </>
-  );
+  return null; // Pas de rendu visible nécessaire
 } 

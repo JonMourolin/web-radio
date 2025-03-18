@@ -44,7 +44,13 @@ interface RadioState {
 
 // Fonction pour calculer l'heure du serveur avec corrections
 const getServerTime = () => {
-  return new Date();
+  const now = new Date();
+  // Vérifier si la date est dans le futur (problème potentiel avec 2025 observé dans les logs)
+  if (now.getFullYear() > 2024) {
+    console.log(`[Radio] Correction de la date ${now.toISOString()} → date actuelle`);
+    return new Date(); // Force une nouvelle date
+  }
+  return now;
 };
 
 // Pistes par défaut pour initialiser l'état si nécessaire
@@ -145,13 +151,22 @@ async function getRadioState(force = false): Promise<RadioState | null> {
     // Vérifier si une mise à jour de la position est nécessaire
     const now = getServerTime();
     
-    // Si force=true ou si la dernière vérification date d'il y a plus de 30 secondes
-    if (force || new Date(lastTrackCheck).getTime() + 30000 < now.getTime()) {
+    // Si force=true ou si la dernière vérification date d'il y a plus de 5 secondes
+    if (force || new Date(lastTrackCheck).getTime() + 5000 < now.getTime()) {
       console.log('[Radio] Vérification de l\'avancement de la piste (dernier contrôle:', lastTrackCheck, ')');
       
       // Vérifier si la piste en cours est terminée en calculant la position actuelle
       const startTime = new Date(state.startTime);
-      const elapsedSeconds = (now.getTime() - startTime.getTime()) / 1000;
+      
+      // Corriger les dates de démarrage de piste qui sont dans le futur
+      if (startTime.getFullYear() > 2024) {
+        console.log(`[Radio] Correction date démarrage piste: ${startTime.toISOString()} → date actuelle moins 10 secondes`);
+        const correctedStartTime = new Date();
+        correctedStartTime.setSeconds(correctedStartTime.getSeconds() - 10);
+        state.startTime = correctedStartTime;
+      }
+      
+      const elapsedSeconds = (now.getTime() - new Date(state.startTime).getTime()) / 1000;
       
       // Mettre à jour la position dans l'état
       state.position = elapsedSeconds;

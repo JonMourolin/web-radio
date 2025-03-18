@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Track } from '@/app/types/track';
 
 interface HeaderProps {
@@ -13,21 +13,49 @@ export default function Header({ currentPage }: HeaderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [volume, setVolume] = useState(1);
+  const [initialized, setInitialized] = useState(false);
+  const requestRef = useRef<number | null>(null);
 
-  // Synchroniser l'état avec le player global
+  // Utiliser requestAnimationFrame pour une mise à jour fluide de l'interface
+  const updatePlayerState = () => {
+    // @ts-ignore
+    if (window.radioPlayer) {
+      // @ts-ignore
+      setIsPlaying(window.radioPlayer.isPlaying);
+      // @ts-ignore
+      setCurrentTrack(window.radioPlayer.currentTrack);
+    }
+    
+    // Continuer la boucle d'animation
+    requestRef.current = requestAnimationFrame(updatePlayerState);
+  };
+
+  // Initialiser le header une seule fois au montage
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    if (!initialized) {
       // @ts-ignore
       if (window.radioPlayer) {
+        // Synchroniser l'état initial
         // @ts-ignore
         setIsPlaying(window.radioPlayer.isPlaying);
         // @ts-ignore
         setCurrentTrack(window.radioPlayer.currentTrack);
+        // @ts-ignore
+        setVolume(window.radioPlayer.volume || 1);
+        setInitialized(true);
       }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
+      
+      // Démarrer la boucle d'animation pour les mises à jour fluides
+      requestRef.current = requestAnimationFrame(updatePlayerState);
+    }
+    
+    // Nettoyage lors du démontage
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [initialized]);
 
   // Handler pour le bouton play/pause
   const handleTogglePlay = () => {

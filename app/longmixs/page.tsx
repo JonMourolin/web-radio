@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
+import SharedLayout from '@/app/components/SharedLayout';
 
 interface LongMix {
   id: string;
@@ -47,7 +46,7 @@ const DUMMY_MIXS: LongMix[] = [
 ];
 
 export default function LongMixsPage() {
-  const [mixs, setMixs] = useState<LongMix[]>(DUMMY_MIXS);
+  const [mixs] = useState<LongMix[]>(DUMMY_MIXS);
 
   // Format duration from seconds to HH:MM:SS
   const formatDuration = (seconds: number) => {
@@ -59,11 +58,8 @@ export default function LongMixsPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-black">
-      <Header currentPage="longmixs" />
-
-      {/* Main Content */}
-      <main className="flex-grow p-6 overflow-auto bg-black text-[#008F11]">
+    <SharedLayout currentPage="longmixs">
+      <div className="p-6 overflow-auto bg-black text-[#008F11] h-full">
         <h2 className="text-[#00FF41] text-2xl font-doto mb-6">Long Mixs</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -92,9 +88,7 @@ export default function LongMixsPage() {
             </div>
           ))}
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </SharedLayout>
   );
 } 

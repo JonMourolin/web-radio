@@ -4,6 +4,30 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.27] - 2024-03-19
+
+### Amélioré
+- Correction du problème de lecture en boucle apparente des morceaux
+- Amélioration de la détection des changements de pistes
+- Vérification de l'avancement des pistes toutes les 5 secondes au lieu de 30
+- Ajout d'outils de diagnostic pour l'état de la radio (accessibles via la console)
+
+### Corrigé
+- Correction des erreurs de date de serveur dans le futur (2025)
+- Gestion améliorée des timeouts Redis
+- Meilleure détection des changements de pistes
+
+## [0.2.26] - 2024-03-19
+
+### Amélioré
+- Optimisation du header pour éviter son rechargement lors de la navigation
+- Utilisation de requestAnimationFrame pour une mise à jour fluide de l'interface
+- Implémentation d'un SharedLayout pour une meilleure cohérence entre les pages
+
+### Corrigé
+- Suppression de l'effet disgracieux où le bouton play/pause change d'état lors de la navigation
+- Maintien des métadonnées du morceau en cours pendant la navigation entre pages
+
 ## [0.2.25] - 2024-03-19
 
 ### Amélioré
