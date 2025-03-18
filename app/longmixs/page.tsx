@@ -118,7 +118,7 @@ export default function LongMixsPage() {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.19 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.20 - Vercel KV</p>
       </footer>
     </div>
   );

@@ -4,6 +4,12 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.20] - 2024-03-19
+
+### Modifié
+- Suppression de la page "Playlist" et de son entrée dans la navigation
+- Simplification de l'interface avec uniquement les sections Radio et Long Mixs
+
 ## [0.2.19] - 2024-03-19
 
 ### Ajouté

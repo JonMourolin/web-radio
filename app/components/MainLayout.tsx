@@ -168,15 +168,9 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
           <span className="text-[#00FF41] font-doto mr-4">Radio</span>
           <Link 
             href="/longmixs" 
-            className="text-[#008F11] hover:text-[#00FF41] font-doto mr-4"
-          >
-            Long Mixs
-          </Link>
-          <Link 
-            href="/playlist" 
             className="text-[#008F11] hover:text-[#00FF41] font-doto"
           >
-            Playlist
+            Long Mixs
           </Link>
         </div>
 
@@ -242,7 +236,7 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.19 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.20 - Vercel KV</p>
       </footer>
 
       {/* Hidden Audio Player */}
