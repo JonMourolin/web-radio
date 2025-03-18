@@ -4,6 +4,17 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-03-19
+
+### Ajouté
+- Page de Long Mixs avec mise à jour des images depuis Cloudinary
+- Intégration de couvertures d'images pour les trois mixs (Deep House Journey, Ambient Voyage, Electronic Fusion)
+- Interface améliorée pour la visualisation des Long Mixs
+
+### Modifié
+- Optimisation du chargement des images Cloudinary
+- Descriptions des mixs plus concises et informatives
+
 ## [0.3.1] - 2025-03-19
 
 ### Modifié
