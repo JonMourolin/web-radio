@@ -4,6 +4,16 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.18] - 2024-03-19
+
+### Ajouté
+- Nouvelle page "Long Mixs" accessible depuis le header
+
+### Corrigé
+- Résolution du problème de coupure des morceaux avant leur fin
+- Ajout d'une marge de tolérance de 2 secondes pour la transition entre les pistes
+- Amélioration de la fluidité des transitions entre les morceaux
+
 ## [0.2.17] - 2024-03-19
 
 ### Corrigé

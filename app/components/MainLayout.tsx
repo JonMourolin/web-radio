@@ -22,7 +22,6 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
   const [radioState, setRadioState] = useState<RadioState | null>(null);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
   const [localPause, setLocalPause] = useState(false); // État de pause local
-  const [audioInitialized, setAudioInitialized] = useState(false); // Nouvel état pour suivre l'initialisation de l'audio
   const audioRef = useRef<HTMLAudioElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -63,18 +62,8 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
           }
         }
       } else if (lastTrackId === null && newTrackId) {
-        // Premier chargement - On définit l'ID de la piste mais on ne touche pas encore à l'audio
-        console.log('First load, preparing to join stream at position:', data.position);
+        // Premier chargement
         setLastTrackId(newTrackId);
-        setRadioState(data); // Mettre à jour l'état pour que le render puisse créer l'audio
-        
-        if (!audioInitialized) {
-          setAudioInitialized(true); // Marquer l'audio comme prêt à être initialisé
-        }
-        
-        // On laisse le cycle de rendu créer l'élément audio avec la bonne source
-        // puis l'effet useEffect s'occupera de positionner et démarrer la lecture
-        return; // Sortir tôt pour éviter de modifier à nouveau l'état
       } else {
         // Même piste, on ajuste juste la position si nécessaire
         if (audioRef.current && Math.abs(audioRef.current.currentTime - data.position) > 5) {
@@ -109,20 +98,6 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
       }
     };
   }, []);
-
-  // Effet spécifique pour traiter le premier chargement de l'audio
-  useEffect(() => {
-    if (!audioRef.current || !radioState || !currentTrack || !audioInitialized) return;
-      
-    // Positionner l'audio à la position actuelle du flux
-    console.log('Initializing audio player at position:', radioState.position);
-    audioRef.current.currentTime = radioState.position;
-      
-    // Démarrer la lecture si la radio est en cours de lecture
-    if (radioState.isPlaying && !localPause) {
-      audioRef.current.play().catch(console.error);
-    }
-  }, [audioInitialized, radioState, currentTrack, localPause]);
 
   // Effect to handle audio playback when radio state changes
   useEffect(() => {
@@ -249,17 +224,16 @@ export default function MainLayout({ tracks }: MainLayoutProps) {
 
       {/* Footer - Black band on bottom */}
       <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.17 - Vercel KV</p>
+        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.18 - Vercel KV</p>
       </footer>
 
-      {/* Hidden Audio Player - Ne le crée que lorsque les données sont prêtes */}
-      {currentTrack?.cloudinaryUrl && audioInitialized ? (
+      {/* Hidden Audio Player */}
+      {currentTrack?.cloudinaryUrl ? (
         <audio
           ref={audioRef}
           src={currentTrack.cloudinaryUrl}
           onEnded={handleTrackEnd}
           hidden
-          preload="auto"
         />
       ) : null}
     </div>
