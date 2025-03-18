@@ -326,6 +326,36 @@ export default function GlobalPlayer() {
         setTrackEnding(false);
       } else {
         console.warn('Server rejected track end notification', data);
+        
+        // Si le serveur a refusé car la piste n'a pas joué assez longtemps
+        if (data.message && data.message.includes("n'a pas joué assez longtemps")) {
+          console.log('Track change rejected because it has not played long enough. Continuing playback...');
+          
+          // Réinitialiser l'état pour permettre une nouvelle notification plus tard
+          setTrackEnding(false);
+          setNotifiedTrackEnd(null);
+          
+          // Si la lecture s'est arrêtée (en raison de l'événement 'ended'), 
+          // on redémarre la lecture depuis la position actuelle
+          if (audioRef.current && audioRef.current.paused && radioState?.isPlaying && !localPause) {
+            // Calculer la position actuelle depuis le serveur
+            const serverPosition = radioState.position;
+            
+            console.log(`Restarting playback at position ${serverPosition.toFixed(2)}s`);
+            
+            try {
+              // Définir la position actuelle
+              audioRef.current.currentTime = serverPosition;
+              
+              // Redémarrer la lecture
+              audioRef.current.play().catch(err => {
+                console.error('Failed to restart playback:', err);
+              });
+            } catch (err) {
+              console.error('Error restarting playback:', err);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error notifying track end', error);
@@ -340,20 +370,84 @@ export default function GlobalPlayer() {
     
     // Vérifier si la piste est vraiment finie (à moins de 1.5 secondes de la fin)
     const remainingTime = audio.duration - audio.currentTime;
-    console.log(`Track ended event, remaining time: ${remainingTime.toFixed(2)}s`);
+    console.log(`Track ended event, remaining time: ${remainingTime.toFixed(2)}s, Duration: ${audio.duration.toFixed(2)}s, Current position: ${audio.currentTime.toFixed(2)}s`);
     
-    if (remainingTime <= 1.5) {
-      const trackId = radioState.currentTrack.cloudinaryPublicId;
-      const actualDuration = audio.duration;
+    // Si on n'est pas vraiment à la fin (peut arriver avec certains navigateurs),
+    // alors retarder le changement de piste jusqu'à ce qu'on soit vraiment à la fin
+    if (remainingTime > 1.0 && !audio.ended) {
+      console.log(`Track end detected prematurely, waiting until track really ends (${remainingTime.toFixed(2)}s remaining)`);
       
-      console.log(`Audio has naturally ended, notifying server. Track: ${trackId}, Duration: ${actualDuration.toFixed(2)}s`);
-      setTrackEnding(true);
+      // Mettre en place un intervalle pour vérifier la fin réelle
+      const checkRealEnd = setInterval(() => {
+        if (!audioRef.current) {
+          clearInterval(checkRealEnd);
+          return;
+        }
+        
+        const newRemainingTime = audioRef.current.duration - audioRef.current.currentTime;
+        console.log(`Waiting for real end, remaining: ${newRemainingTime.toFixed(2)}s`);
+        
+        if (newRemainingTime <= 0.2 || audioRef.current.ended) {
+          clearInterval(checkRealEnd);
+          console.log(`Now track has really ended at position ${audioRef.current.currentTime.toFixed(2)}s / ${audioRef.current.duration.toFixed(2)}s`);
+          
+          // Maintenant qu'on est vraiment à la fin, notifier
+          setTrackEnding(true);
+          if (radioState?.currentTrack) {
+            notifyTrackEnd(
+              radioState.currentTrack.cloudinaryPublicId, 
+              audioRef.current.duration
+            );
+          }
+        }
+      }, 100);
       
-      // Notifier le serveur de la fin de la piste
-      notifyTrackEnd(trackId, actualDuration);
-    } else {
-      console.log('Track end event fired but still has remaining time. Not notifying server yet.');
+      return;
     }
+    
+    // Si on arrive ici, c'est que la piste est vraiment terminée
+    // Marquer que la fin de la piste a été détectée
+    setTrackEnding(true);
+    
+    // Forcer le passage à la piste suivante, même avec un reste de temps
+    // car l'événement ended est assez fiable
+    const trackId = radioState.currentTrack.cloudinaryPublicId;
+    const actualDuration = audio.duration;
+    
+    console.log(`Audio has ended, notifying server. Track: ${trackId}, Duration: ${actualDuration.toFixed(2)}s, Current position: ${audio.currentTime.toFixed(2)}s`);
+    
+    // Notifier le serveur de la fin de la piste
+    notifyTrackEnd(trackId, actualDuration);
+    
+    // En tant que mesure de sécurité, essayons également de passer manuellement à la piste suivante
+    // si le serveur ne répond pas rapidement
+    setTimeout(async () => {
+      // Si nous sommes toujours sur la même piste après 3 secondes, forcer le changement
+      if (
+        radioState?.currentTrack &&
+        radioState.currentTrack.cloudinaryPublicId === trackId
+      ) {
+        console.log('Fallback: Track change not detected after timeout, forcing next track...');
+        try {
+          // Appeler manuellement l'API nextTrack
+          const response = await fetch('/api/stream', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'nextTrack' })
+          });
+          
+          if (response.ok) {
+            console.log('Forced track change successful');
+            // Recharger l'état radio pour obtenir la nouvelle piste
+            fetchRadioState();
+          }
+        } catch (error) {
+          console.error('Error in fallback track change:', error);
+        }
+      }
+    }, 3000);
   };
   
   // Vérifications périodiques pour la fin des pistes
@@ -374,20 +468,37 @@ export default function GlobalPlayer() {
           console.log(`Approaching track end, remaining: ${remainingTime.toFixed(2)}s`);
         }
         
-        // Si moins de 0.5 secondes, considérer comme la fin et notifier le serveur
-        if (remainingTime <= 0.5 && !trackEnding) {
+        // Si moins de 0.5 secondes ou si la piste est vraiment terminée, 
+        // considérer comme la fin et notifier le serveur
+        if ((remainingTime <= 0.5 || audio.ended) && !trackEnding) {
           const trackId = radioState.currentTrack.cloudinaryPublicId;
           const actualDuration = audio.duration;
           
-          console.log(`Track about to end, notifying server preemptively. Duration: ${actualDuration.toFixed(2)}s`);
+          console.log(`Track about to end, notifying server preemptively. Duration: ${actualDuration.toFixed(2)}s, Current position: ${audio.currentTime.toFixed(2)}s, Remaining: ${remainingTime.toFixed(2)}s`);
+          
+          // Bloquer toute nouvelle lecture jusqu'à la fin complète de la piste
+          if (audio.currentTime >= actualDuration - 0.2) {
+            // On est vraiment à la fin, on peut notifier
+            setTrackEnding(true);
+            notifyTrackEnd(trackId, actualDuration);
+          } else {
+            console.log(`Waiting for track to completely finish (${remainingTime.toFixed(2)}s remaining)`);
+            // Ne pas encore notifier la fin si on n'est pas totalement à la fin
+          }
+        }
+        
+        // Surveiller les écarts importants entre la durée et la position actuelle
+        if (Math.abs(audio.duration - audio.currentTime) <= 0.2 && !trackEnding) {
+          console.log(`Track reached natural end: ${audio.currentTime.toFixed(2)}s / ${audio.duration.toFixed(2)}s`);
+          const trackId = radioState.currentTrack.cloudinaryPublicId;
           setTrackEnding(true);
-          notifyTrackEnd(trackId, actualDuration);
+          notifyTrackEnd(trackId, audio.duration);
         }
       }
     };
     
-    // Exécuter toutes les secondes
-    const checkInterval = setInterval(checkTrackEnd, 1000);
+    // Exécuter plus fréquemment pour être plus précis sur la fin des pistes
+    const checkInterval = setInterval(checkTrackEnd, 200);
     
     return () => clearInterval(checkInterval);
   }, [radioState?.currentTrack, trackEnding]);
@@ -400,6 +511,9 @@ export default function GlobalPlayer() {
       // Créer l'élément audio
       audioRef.current = new Audio();
       audioRef.current.volume = volume;
+      
+      // Désactiver explicitement la lecture en boucle
+      audioRef.current.loop = false;
       
       // Éviter la mise en mémoire tampon agressive
       if (typeof audioRef.current.preload !== 'undefined') {
@@ -423,6 +537,12 @@ export default function GlobalPlayer() {
         console.log('Audio can now be played');
       };
       
+      // Ajouter un gestionnaire d'événement ended directement ici
+      audioRef.current.onended = () => {
+        console.log('Audio ended event triggered directly');
+        handleTrackEnd();
+      };
+      
       console.log('Audio element created and initialized');
     }
     
@@ -435,6 +555,7 @@ export default function GlobalPlayer() {
         audioRef.current.onstalled = null;
         audioRef.current.onwaiting = null;
         audioRef.current.oncanplay = null;
+        audioRef.current.onended = null;
       }
     };
   }, [volume]);
@@ -445,7 +566,7 @@ export default function GlobalPlayer() {
     if (!audio) return;
     
     const onEnded = () => {
-      console.log('Audio ended event triggered');
+      console.log('Audio ended event triggered from separate useEffect');
       handleTrackEnd();
     };
     

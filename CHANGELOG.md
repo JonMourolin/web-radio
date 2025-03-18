@@ -4,6 +4,48 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-03-18
+
+### Ajouté
+- Serveur de streaming audio avec intégration FFmpeg
+- Nouveau composant `StreamPlayer` pour écouter en synchronisation
+- Traitement audio côté serveur avec FFmpeg
+- Algorithme intelligent de rotation de playlist pour éviter les pistes répétitives
+- Script de configuration pour le serveur de streaming
+- API d'état pour le serveur de streaming
+- Documentation pour la configuration et l'utilisation du serveur de streaming
+
+### Modifié
+- Amélioration de l'expérience de lecture audio avec la technologie de streaming véritable
+- Interface utilisateur du lecteur améliorée avec prévision des pistes à venir
+- Mise à jour du README avec les instructions d'installation et d'utilisation
+- Changements architecturaux pour supporter le streaming côté serveur
+
+### Corrigé
+- Problèmes de lecture audio lors de la connexion de plusieurs utilisateurs
+- Transitions de piste incohérentes
+- Compatibilité navigateur avec la lecture audio
+
+## [0.2.33] - 2025-03-15
+
+### Ajouté
+- Outil de test de connectivité Redis
+- Amélioration de la gestion des erreurs pour les téléchargements
+
+### Corrigé
+- Problèmes de mise en page sur les appareils mobiles
+- Affichage des métadonnées pour certains cas limites
+
+## [0.2.14] - 2025-03-01
+
+### Ajouté
+- Première version publique
+- Interface utilisateur inspirée de Matrix
+- Intégration Cloudinary pour le stockage audio
+- Lecteur audio de base
+- Affichage des métadonnées de piste
+- Design responsive mobile
+
 ## [0.2.31] - 2025-03-19
 
 ### Corrigé

@@ -45,3 +45,12 @@ next-env.d.ts
 # Uploaded files
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Streaming server
+tmp/
+*.mp3
+*.wav
+*.aac
+*.ogg
+streaming.log
+nohup.out

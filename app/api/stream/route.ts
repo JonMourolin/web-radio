@@ -358,6 +358,7 @@ export async function POST(request: NextRequest) {
     // Vérifier si c'est une notification de fin de piste venant du client
     if (data.action === 'trackEnded' && data.trackId) {
       console.log(`[Radio] Notification de fin de piste reçue du client pour: ${data.trackId}`);
+      console.log(`[Radio] Durée réelle fournie: ${data.actualDuration || 'non spécifiée'}`);
       
       const state = await getRadioState();
       
@@ -371,12 +372,32 @@ export async function POST(request: NextRequest) {
       if (currentTrack && currentTrack.cloudinaryPublicId === data.trackId) {
         console.log('[Radio] Fin de piste confirmée par le client, passage à la piste suivante');
         
+        // Vérifier que la piste actuelle est bien terminée en calculant le temps écoulé
+        const now = getServerTime();
+        const elapsedSeconds = (now.getTime() - new Date(state.startTime).getTime()) / 1000;
+        const trackDuration = currentTrack.duration;
+        
+        // Ajout d'une vérification supplémentaire : la piste doit avoir joué au moins 80% de sa durée
+        // pour éviter les changements prématurés
+        if (elapsedSeconds < trackDuration * 0.8 && data.actualDuration && data.actualDuration < trackDuration * 0.8) {
+          console.log(`[Radio] La piste n'a pas joué assez longtemps (${elapsedSeconds.toFixed(1)}s / ${trackDuration}s). Attente avant changement.`);
+          return NextResponse.json({
+            success: false,
+            message: "La piste n'a pas joué assez longtemps, changement différé",
+            currentTrack: currentTrack
+          });
+        }
+        
         // Passer à la piste suivante
         const nextIndex = (state.currentTrackIndex + 1) % state.tracks.length;
         state.currentTrackIndex = nextIndex;
         state.currentTrack = state.tracks[nextIndex];
         state.position = 0;
         state.startTime = getServerTime();
+        
+        // Log détaillé du changement de piste
+        console.log(`[Radio] Changement de piste: "${currentTrack.title}" → "${state.currentTrack.title}"`);
+        console.log(`[Radio] Durée jouée: ${elapsedSeconds.toFixed(1)}s / ${trackDuration}s (${(elapsedSeconds/trackDuration*100).toFixed(0)}%)`);
         
         try {
           // Mettre à jour l'état dans Redis
@@ -389,16 +410,54 @@ export async function POST(request: NextRequest) {
             // Ici on pourrait stocker cette information pour améliorer les métadonnées
           }
           
-          // Retourner un message de succès
+          // Rafraîchir le cache pour tous les clients
+          revalidatePath('/api/stream');
+          
+          // Retourner un message de succès avec les informations sur la nouvelle piste
           return NextResponse.json({
             success: true,
             currentTrack: state.currentTrack,
+            previousTrack: currentTrack.title,
+            message: "Piste changée avec succès",
+            playedDuration: elapsedSeconds,
+            expectedDuration: trackDuration
           });
         } catch (error) {
           console.error('[Radio] Erreur lors du changement de piste:', error);
           return NextResponse.json({ error: "Erreur lors du changement de piste" }, { status: 500 });
         }
       } else {
+        // Même si le trackId ne correspond pas, vérifier si la durée de la piste actuelle est dépassée
+        // pour éviter les boucles infinies
+        const now = getServerTime();
+        const elapsedSeconds = (now.getTime() - new Date(state.startTime).getTime()) / 1000;
+        
+        if (currentTrack && elapsedSeconds > currentTrack.duration * 1.1) { // 110% de la durée prévue
+          console.log(`[Radio] Piste actuelle a dépassé sa durée (${elapsedSeconds.toFixed(1)}s > ${currentTrack.duration}s), passage à la suivante malgré le trackId incorrect`);
+          
+          // Passer à la piste suivante
+          const nextIndex = (state.currentTrackIndex + 1) % state.tracks.length;
+          state.currentTrackIndex = nextIndex;
+          state.currentTrack = state.tracks[nextIndex];
+          state.position = 0;
+          state.startTime = now;
+          
+          try {
+            await redis.set(RADIO_STATE_KEY, state);
+            revalidatePath('/api/stream');
+            
+            return NextResponse.json({
+              success: true,
+              currentTrack: state.currentTrack,
+              message: "Piste changée (durée dépassée)",
+              playedDuration: elapsedSeconds,
+              expectedDuration: currentTrack.duration
+            });
+          } catch (error) {
+            console.error('[Radio] Erreur lors du changement de piste forcé:', error);
+          }
+        }
+        
         console.log('[Radio] Notification de fin de piste ignorée - trackId obsolète ou ne correspond pas à la piste actuelle');
         return NextResponse.json({
           success: false,
