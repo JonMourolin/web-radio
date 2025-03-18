@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import Header from '@/app/components/Header';
+import Footer from '@/app/components/Footer';
 
 interface LongMix {
   id: string;
@@ -59,30 +60,7 @@ export default function LongMixsPage() {
 
   return (
     <div className="flex flex-col h-screen bg-black">
-      {/* Header - Black band on top */}
-      <header className="h-20 bg-black text-white flex items-center px-6 z-50">
-        <div className="flex items-center">
-          <Link href="/" className="mr-6">
-            <h1 className="text-xl font-normal text-[#008F11] font-doto tracking-wider lowercase">jon sound library</h1>
-          </Link>
-        </div>
-
-        <div className="flex items-center ml-auto">
-          <Link 
-            href="/" 
-            className="text-[#008F11] hover:text-[#00FF41] font-doto mr-4"
-          >
-            Radio
-          </Link>
-          <span className="text-[#00FF41] font-doto mr-4">Long Mixs</span>
-          <Link 
-            href="/playlist" 
-            className="text-[#008F11] hover:text-[#00FF41] font-doto"
-          >
-            Playlist
-          </Link>
-        </div>
-      </header>
+      <Header currentPage="longmixs" />
 
       {/* Main Content */}
       <main className="flex-grow p-6 overflow-auto bg-black text-[#008F11]">
@@ -116,10 +94,7 @@ export default function LongMixsPage() {
         </div>
       </main>
 
-      {/* Footer - Black band on bottom */}
-      <footer className="h-16 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-[#008F11]/60 font-doto">v0.2.20 - Vercel KV</p>
-      </footer>
+      <Footer />
     </div>
   );
 } 

@@ -4,6 +4,13 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.21] - 2024-03-19
+
+### Amélioré
+- Création de composants réutilisables Header et Footer
+- Refactorisation pour partager l'interface commune entre toutes les pages
+- Meilleure cohérence visuelle et expérience utilisateur entre les différentes sections
+
 ## [0.2.20] - 2024-03-19
 
 ### Modifié
