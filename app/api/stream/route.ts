@@ -12,13 +12,17 @@ const redisToken = process.env.KV_REST_API_TOKEN || '';
 console.log('Redis URL:', redisUrl ? 'Définie' : 'Non définie');
 console.log('Redis Token:', redisToken ? 'Défini' : 'Non défini');
 
-// Initialiser Redis avec configuration explicite
+// Configuration avancée de Redis avec retry et timeout plus longs
 const redis = new Redis({
   url: redisUrl,
   token: redisToken,
+  retry: {
+    retries: 5,
+    backoff: (retryCount) => Math.min(Math.pow(2, retryCount) * 1000, 30000)
+  }
 });
 
-console.log('Upstash Redis initialisé avec succès avec configuration directe');
+console.log('Upstash Redis initialisé avec succès avec configuration robuste');
 
 // Clé pour stocker l'état radio dans Redis
 const RADIO_STATE_KEY = 'radio:state:v2';
@@ -27,7 +31,7 @@ const RADIO_STATE_KEY = 'radio:state:v2';
 let lastTrackCheck = new Date();
 
 // Ajouter un timeout plus long pour éviter les erreurs de connexion
-const REDIS_TIMEOUT = 15000; // 15 secondes
+const REDIS_TIMEOUT = 30000; // 30 secondes au lieu de 15
 
 // Marge de tolérance pour la fin des pistes (en secondes)
 const END_TRACK_TOLERANCE = 10; // Augmenté à 10 secondes pour plus de marge

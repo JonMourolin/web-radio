@@ -21,27 +21,27 @@ const DUMMY_MIXS: LongMix[] = [
     title: 'Deep House Journey',
     artist: 'DJ Ambient',
     duration: 3600, // 1 heure
-    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg',
+    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742335661/mamene_break_eubs8f.jpg',
     mixUrl: '#',
-    description: 'Une exploration d\'une heure dans le monde du Deep House avec des rythmes envoûtants et des mélodies atmosphériques. Parfait pour créer une ambiance détendue mais énergique dans n\'importe quel espace.'
+    description: 'Une exploration d\'une heure dans le monde du Deep House avec des rythmes envoûtants et des mélodies atmosphériques. Parfait pour travailler ou se détendre.'
   },
   {
     id: 'mix2',
     title: 'Ambient Voyage',
     artist: 'Nebula Sound',
     duration: 4500, // 1 heure 15 minutes
-    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/e_art:audrey/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg',
+    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742335661/costa_arenbi_gs4ojf.jpg',
     mixUrl: '#',
-    description: 'Partez pour un voyage sonore à travers des paysages sonores ambiants et atmosphériques. Ce mix de 1h15 combine des textures sonores éthérées et des rythmes subtils pour une expérience méditative profonde.'
+    description: 'Partez pour un voyage sonore à travers des paysages sonores ambiants et atmosphériques. Ce mix de 1h15 combine des textures électroniques profondes et des sons naturels apaisants.'
   },
   {
     id: 'mix3',
     title: 'Electronic Fusion',
     artist: 'Circuit Breaker',
     duration: 5400, // 1 heure 30 minutes
-    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/e_art:incognito/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg',
+    coverUrl: 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742335660/mamene_break_2_ckns2h.jpg',
     mixUrl: '#',
-    description: 'Un mélange audacieux de 1h30 fusionnant électro, techno et house progressive. Cette session énergique traverse différents styles électroniques avec des transitions fluides et des drops puissants qui vous feront bouger.'
+    description: 'Un mélange audacieux de 1h30 fusionnant électro, techno et house progressive. Cette session énergique traverse différents styles musicaux pour une expérience immersive.'
   }
 ];
 

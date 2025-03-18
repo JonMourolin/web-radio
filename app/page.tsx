@@ -1,7 +1,6 @@
 'use client';
 
 import SharedLayout from './components/SharedLayout';
-import StreamPlayer from './components/StreamPlayer';
 import Image from 'next/image';
 
 export default function Home() {
@@ -18,9 +17,6 @@ export default function Home() {
             priority
           />
         </div>
-        
-        {/* Lecteur de streaming en haut à droite, maintenant minimaliste */}
-        <StreamPlayer />
       </div>
     </SharedLayout>
   );
