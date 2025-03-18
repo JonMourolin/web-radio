@@ -4,6 +4,14 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.31] - 2025-03-19
+
+### Corrigé
+- Suppression des "corrections" de date qui causaient des problèmes en 2025
+- Correction de la logique de vérification des dates pour éviter les ajustements inutiles
+- Maintien de la correction uniquement pour les dates réellement dans le futur
+- Amélioration des messages de log pour une meilleure clarté diagnostique
+
 ## [0.2.30] - 2024-03-19
 
 ### Corrigé

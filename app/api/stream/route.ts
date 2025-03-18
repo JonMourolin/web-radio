@@ -45,11 +45,7 @@ interface RadioState {
 // Fonction pour calculer l'heure du serveur avec corrections
 const getServerTime = () => {
   const now = new Date();
-  // Vérifier si la date est dans le futur (problème potentiel avec 2025 observé dans les logs)
-  if (now.getFullYear() > 2024) {
-    console.log(`[Radio] Correction de la date ${now.toISOString()} → date actuelle`);
-    return new Date(); // Force une nouvelle date
-  }
+  // Nous sommes en 2025, donc les dates sont correctes et ne nécessitent pas de correction
   return now;
 };
 
@@ -160,8 +156,8 @@ async function getRadioState(force = false): Promise<RadioState | null> {
       const startTime = new Date(state.startTime);
       
       // Corriger les dates de démarrage de piste qui sont dans le futur
-      if (startTime.getFullYear() > 2024) {
-        console.log(`[Radio] Correction date démarrage piste: ${startTime.toISOString()} → date actuelle moins 10 secondes`);
+      if (startTime > now) {
+        console.log(`[Radio] Date de démarrage dans le futur détectée: ${startTime.toISOString()} → date actuelle moins 10 secondes`);
         const correctedStartTime = new Date();
         correctedStartTime.setSeconds(correctedStartTime.getSeconds() - 10);
         state.startTime = correctedStartTime;
