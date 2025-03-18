@@ -1,18 +1,12 @@
 {
   "name": "web-radio",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "stream-server": "node scripts/stream-server.js",
-    "stream-server-install": "npm install --save fluent-ffmpeg @ffmpeg-installer/ffmpeg",
-    "stream-server-setup": "node scripts/setup-streaming.js",
-    "stream-server-start": "node scripts/run-stream-server.js",
-    "stream-server-background": "nohup node scripts/run-stream-server.js > streaming.log 2>&1 &",
-    "stream-server-check": "curl -I http://localhost:8000/status"
+    "lint": "next lint"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",

@@ -4,6 +4,20 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-03-19
+
+### Modifié
+- Simplification majeure de l'architecture de streaming
+- Suppression de la dépendance sur un serveur de streaming externe
+- Utilisation directe de Cloudinary pour le streaming audio
+- Refonte du composant StreamPlayer pour se connecter à l'API Next.js existante
+- Amélioration de la configuration de déploiement Vercel
+
+### Supprimé
+- Scripts de serveur de streaming externe
+- Dépendances liées à FFmpeg
+- Configuration du serveur de streaming externe
+
 ## [0.3.0] - 2025-03-18
 
 ### Ajouté
