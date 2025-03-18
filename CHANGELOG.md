@@ -4,6 +4,16 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.30] - 2024-03-19
+
+### Corrigé
+- Refonte complète du système de gestion audio pour résoudre définitivement le problème de redémarrage constant
+- Séparation claire entre initialisation, changement de piste et ajustement de position
+- Augmentation des seuils de tolérance (20 secondes pour les dérives, 30 secondes entre les ajustements)
+- Ajout de logs détaillés avec étiquettes (FIRST LOAD, TRACK CHANGE, POSITION ADJUSTMENT)
+- Ajout d'événements audio supplémentaires pour un meilleur diagnostic (onwaiting, oncanplay)
+- Rallongement des délais entre les mises à jour d'état (15 secondes au lieu de 10)
+
 ## [0.2.29] - 2024-03-19
 
 ### Corrigé
