@@ -4,6 +4,13 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.17] - 2024-03-19
+
+### Corrigé
+- Résolution du bug où le morceau démarrait brièvement au début avant de se repositionner
+- Amélioration de l'initialisation du lecteur audio pour rejoindre directement le flux à la bonne position
+- Optimisation du cycle de vie du lecteur audio
+
 ## [0.2.16] - 2024-03-19
 
 ### Ajouté
