@@ -4,6 +4,16 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2025-03-20
+
+### Modifié
+- Refonte complète de l'interface des Long Mixes avec un design plus épuré et moderne
+- Nouvelles vignettes carrées avec contour vert uniquement autour de l'image
+- Ajout d'un effet noir et blanc sur les images qui se colorisent au survol
+- Simplification des informations affichées (suppression de l'artiste et des détails techniques)
+- Intégration du bouton "Écouter" directement sur l'image pour une meilleure ergonomie
+- Amélioration de l'espacement et de l'alignement des éléments pour une présentation plus harmonieuse
+
 ## [0.3.2] - 2025-03-19
 
 ### Ajouté
