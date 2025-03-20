@@ -5,7 +5,7 @@ import Footer from '@/app/components/Footer';
 
 interface SharedLayoutProps {
   children: React.ReactNode;
-  currentPage: 'radio' | 'longmixs';
+  currentPage: 'longmixs';
 }
 
 export default function SharedLayout({ children, currentPage }: SharedLayoutProps) {

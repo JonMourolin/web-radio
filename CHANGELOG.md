@@ -4,6 +4,33 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-03-21
+
+### Supprimé
+- Suppression des dépendances Redis (@upstash/redis, @vercel/kv) qui ne sont plus nécessaires
+- Suppression du middleware qui n'était utilisé que pour la journalisation
+- Nettoyage de la configuration Next.js (suppression de serverExternalPackages, api config)
+- Mise à jour de la configuration des images pour utiliser remotePatterns au lieu de domains
+
+### Amélioré
+- Réduction de la taille du bundle en supprimant les dépendances inutilisées
+- Simplification de l'architecture de l'application pour se concentrer uniquement sur les Long Mixes
+
+## [0.4.0] - 2025-03-21
+
+### Modifié
+- Suppression complète du flux radio pour simplifier l'application
+- Focus exclusif sur la fonctionnalité "Long Mixes"
+- Refonte de l'interface utilisateur pour une expérience centrée sur les Long Mixes
+- Simplification du Header et des composants de navigation
+- Redirection automatique de la page d'accueil vers la page des Long Mixes
+
+### Supprimé
+- Composants liés au flux radio (StreamPlayer, GlobalPlayer, etc.)
+- API de streaming radio et de gestion des pistes
+- Scripts de streaming
+- Interface d'administration des pistes radio
+
 ## [0.3.8] - 2025-03-20
 
 ### Ajouté

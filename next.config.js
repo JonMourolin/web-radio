@@ -9,18 +9,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['i.discogs.com', 'res.cloudinary.com'],
-  },
-  experimental: {
-    // Utilisation de la configuration correcte pour les packages externes
-    serverExternalPackages: ['@upstash/redis'],
-    serverActions: {
-      bodySizeLimit: '500mb'
-    },
-  },
-  // Configuration explicite du runtime
-  serverRuntimeConfig: {
-    PROJECT_ROOT: __dirname,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
   // Configuration pour les routes API
   async headers() {
@@ -36,13 +30,6 @@ const nextConfig = {
         ]
       }
     ];
-  },
-  // Augmenter la limite de taille des fichiers
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb'
-    },
-    responseLimit: '500mb'
   },
 };
 

@@ -1,23 +1,16 @@
 'use client';
 
-import SharedLayout from './components/SharedLayout';
-import Image from 'next/image';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <SharedLayout currentPage="radio">
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Image Matrix en plein écran */}
-        <div className="absolute inset-0">
-          <Image
-            src="https://res.cloudinary.com/dyom5zfbh/image/upload/v1742158676/web-radio-assets/wyzcqttcvbdhzuf3cuvn.jpg"
-            alt="Matrix Neo"
-            className="object-cover"
-            fill
-            priority
-          />
-        </div>
-      </div>
-    </SharedLayout>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    // Rediriger vers la page des Long Mixes
+    router.push('/longmixs');
+  }, [router]);
+
+  // Retourner un div vide pendant la redirection
+  return <div className="h-screen bg-black"></div>;
 }

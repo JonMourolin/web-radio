@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Space_Mono } from "next/font/google";
 import "./globals.css";
-import GlobalPlayerWrapper from "@/app/components/GlobalPlayerWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +34,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${doto.variable} antialiased`}
       >
-        <GlobalPlayerWrapper />
         {children}
       </body>
     </html>
