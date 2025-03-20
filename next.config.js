@@ -14,6 +14,9 @@ const nextConfig = {
   experimental: {
     // Utilisation de la configuration correcte pour les packages externes
     serverExternalPackages: ['@upstash/redis'],
+    serverActions: {
+      bodySizeLimit: '500mb'
+    },
   },
   // Configuration explicite du runtime
   serverRuntimeConfig: {
@@ -33,7 +36,14 @@ const nextConfig = {
         ]
       }
     ];
-  }
+  },
+  // Augmenter la limite de taille des fichiers
+  api: {
+    bodyParser: {
+      sizeLimit: '500mb'
+    },
+    responseLimit: '500mb'
+  },
 };
 
 module.exports = nextConfig; 
