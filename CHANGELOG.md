@@ -4,6 +4,14 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2025-03-20
+
+### Amélioré
+- Augmentation des limites d'upload de fichiers de 100MB à 500MB
+- Configuration optimisée pour la gestion des fichiers audio volumineux
+- Ajustement des paramètres de mémoire pour les fonctions serverless
+- Amélioration des timeouts pour permettre l'upload de longs mixs
+
 ## [0.3.3] - 2025-03-20
 
 ### Modifié
