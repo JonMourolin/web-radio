@@ -8,7 +8,7 @@
     { "source": "/(.*)", "destination": "/$1" }
   ],
   "functions": {
-    "api/longmixs/upload/route.ts": {
+    "/api/longmixs/upload": {
       "memory": 1024,
       "maxDuration": 60
     }
