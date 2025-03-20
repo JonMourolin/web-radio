@@ -81,12 +81,13 @@ export default function LongMixsPage() {
               >
                 <div className="relative aspect-square border border-[#008F11] overflow-hidden">
                   <Image 
-                    src={mix.coverUrl}
+                    src={mix.coverUrl || `https://res.cloudinary.com/dyom5zfbh/image/upload/v1742502488/default-cover.jpg`}
                     alt={mix.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover transition-all duration-500 filter grayscale hover:grayscale-0"
                     priority
+                    unoptimized
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent h-16">
                     <span className="absolute bottom-3 right-3 bg-black/60 text-[#00FF41] px-2 py-1 text-xs rounded font-doto">

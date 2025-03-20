@@ -4,6 +4,27 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8] - 2025-03-20
+
+### Ajouté
+- Intégration complète des images de couverture Cloudinary pour les Long Mixes
+- Association automatique entre fichiers audio et images basée sur le nom de fichier
+- Meilleure gestion des assets Cloudinary avec filtrage par type de ressource
+- Support pour différents formats de nommage des fichiers Cloudinary
+
+### Modifié
+- Refonte du composant LongMixPlayer pour utiliser les IDs Cloudinary directement
+- Amélioration de l'API get-longmixs pour distinguer les MP3 des images
+- Optimisation du chargement des images avec l'attribut `unoptimized`
+- Interface utilisateur améliorée avec image par défaut en cas d'image manquante
+
+## [0.3.7] - 2025-03-20
+
+### Ajouté
+- Intégration directe avec Cloudinary pour les Long Mixes
+- Support du streaming direct des fichiers .mp3 depuis Cloudinary
+- Nouvelle API `/api/get-longmixs` pour récupérer les mixs depuis Cloudinary
+
 ## [0.3.4] - 2025-03-20
 
 ### Amélioré
@@ -406,3 +427,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Suppression de la gestion manuelle des uploads pour plus de fiabilité
 - Optimisation de la récupération des mixes depuis Cloudinary
 - Simplification de l'architecture de gestion des fichiers audio
+
+## [0.3.9] - 2024-03-20
+
+### Ajouté
+- Intégration des couvertures pour les Long Mixes depuis Cloudinary
+- Fonction de construction d'URL pour les couvertures basée sur le titre du mix
+- Image par défaut pour les mix sans couverture
+- Gestion des erreurs de chargement des images

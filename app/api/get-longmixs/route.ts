@@ -7,6 +7,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Types pour Cloudinary
+interface CloudinaryResource {
+  asset_id: string;
+  public_id: string;
+  resource_type: string;
+  format: string;
+  secure_url: string;
+  duration?: number;
+  tags?: string[];
+}
+
 export async function GET() {
   try {
     console.log('Cloudinary Config:', {
@@ -25,20 +36,36 @@ export async function GET() {
     
     console.log('Resources fetched successfully');
     console.log('Number of resources:', result.resources?.length || 0);
-    console.log('First resource:', result.resources?.[0]);
     
-    // Transformer les ressources pour correspondre à la structure attendue
-    const transformedResources = result.resources.map(resource => ({
-      id: resource.public_id,
-      title: resource.filename || 'Unknown Title',
-      artist: 'Unknown Artist',
-      duration: resource.duration || 0,
-      coverUrl: resource.secure_url,
-      cloudinaryPublicId: resource.public_id,
-      tags: resource.tags ? resource.tags.map(tag => ({ id: tag, name: tag })) : []
-    }));
+    // Séparer les MP3 des images
+    const audioFiles = result.resources.filter((r: CloudinaryResource) => r.resource_type === 'video' && r.format === 'mp3');
+    const imageFiles = result.resources.filter((r: CloudinaryResource) => r.resource_type === 'image');
     
-    return NextResponse.json({ resources: transformedResources });
+    // Associer chaque MP3 à son image de couverture correspondante
+    const mixes = audioFiles.map((audio: CloudinaryResource) => {
+      // On récupère la partie du nom avant le underscore pour faire correspondre les images
+      const baseTitle = audio.public_id.split('/').pop()?.split('_')[0] || '';
+      
+      // On cherche une image correspondante
+      const coverImage = imageFiles.find((img: CloudinaryResource) => {
+        const imgName = img.public_id.split('/').pop()?.split('_')[0] || '';
+        return imgName === baseTitle;
+      });
+      
+      return {
+        id: audio.public_id,
+        title: baseTitle || 'Unknown Title',
+        artist: 'JON',
+        duration: audio.duration || 0,
+        coverUrl: coverImage ? coverImage.secure_url : null,
+        mixUrl: audio.secure_url,
+        cloudinaryPublicId: audio.public_id,
+        cloudinaryCoverId: coverImage ? coverImage.public_id : null,
+        tags: audio.tags ? audio.tags.map((tag: string) => ({ id: tag, name: tag })) : []
+      };
+    });
+    
+    return NextResponse.json({ resources: mixes });
   } catch (error: any) {
     console.error('Error fetching resources:', error);
     return NextResponse.json(

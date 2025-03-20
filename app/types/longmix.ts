@@ -14,6 +14,7 @@ export interface LongMix {
   mixUrl: string;
   tags: Tag[];
   cloudinaryPublicId: string;
+  cloudinaryCoverId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

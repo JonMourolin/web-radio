@@ -9,6 +9,16 @@ interface LongMixPlayerProps {
   onClose: () => void;
 }
 
+// Fonction pour construire l'URL Cloudinary pour l'audio
+const buildCloudinaryUrl = (publicId: string) => {
+  return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload/${publicId}`;
+};
+
+// Fonction pour construire l'URL de la couverture liée
+const buildCoverUrl = (coverId: string) => {
+  return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${coverId}`;
+};
+
 export default function LongMixPlayer({ mix, onClose }: LongMixPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -84,16 +94,30 @@ export default function LongMixPlayer({ mix, onClose }: LongMixPlayerProps) {
     };
   }, []);
 
+  // Debug logs
+  useEffect(() => {
+    console.log('Mix title:', mix.title);
+    console.log('Audio URL:', buildCloudinaryUrl(mix.cloudinaryPublicId));
+    console.log('Cover URL:', mix.cloudinaryCoverId ? buildCoverUrl(mix.cloudinaryCoverId) : 'Pas de cover ID');
+  }, [mix.title]);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-[#008F11] p-4 z-50">
       <div className="max-w-7xl mx-auto flex items-center gap-4">
         {/* Image de couverture */}
         <div className="w-16 h-16 relative flex-shrink-0">
           <Image
-            src={mix.coverUrl}
+            src={mix.cloudinaryCoverId ? buildCoverUrl(mix.cloudinaryCoverId) : 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742502488/default-cover.jpg'}
             alt={mix.title}
             fill
+            sizes="64px"
             className="object-cover rounded"
+            unoptimized
+            onError={(e) => {
+              console.log('URL de l\'image qui a échoué:', mix.cloudinaryCoverId ? buildCoverUrl(mix.cloudinaryCoverId) : 'Pas de cover ID');
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://res.cloudinary.com/dyom5zfbh/image/upload/v1742502488/default-cover.jpg';
+            }}
           />
         </div>
 
@@ -186,7 +210,7 @@ export default function LongMixPlayer({ mix, onClose }: LongMixPlayerProps) {
         {/* Audio element */}
         <audio
           ref={audioRef}
-          src={mix.mixUrl}
+          src={buildCloudinaryUrl(mix.cloudinaryPublicId)}
           preload="metadata"
           onEnded={() => setIsPlaying(false)}
         />
