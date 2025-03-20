@@ -6,11 +6,5 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/$1" }
-  ],
-  "functions": {
-    "api/longmixs/upload": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  }
+  ]
 } 

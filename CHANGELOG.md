@@ -390,3 +390,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Affichage formaté des états audio avec `console.table`
   - Détails supplémentaires sur l'état de fin de piste et les notifications
   - Logs enrichis pour suivre les désynchronisations client-serveur
+
+## [0.3.5] - 2024-03-20
+
+### Corrigé
+- Amélioration de la gestion des erreurs lors de l'upload des longs mixs
+- Meilleure gestion des réponses JSON dans l'interface d'upload
+- Ajout de logs détaillés pour le diagnostic des problèmes d'upload
+- Correction du bug "Unexpected token R" lors de l'upload des fichiers
