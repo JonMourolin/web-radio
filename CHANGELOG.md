@@ -398,3 +398,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Meilleure gestion des réponses JSON dans l'interface d'upload
 - Ajout de logs détaillés pour le diagnostic des problèmes d'upload
 - Correction du bug "Unexpected token R" lors de l'upload des fichiers
+
+## [0.3.7] - 2024-03-20
+
+### Modifié
+- Refonte de la gestion des Long Mixes avec intégration directe à Cloudinary
+- Suppression de la gestion manuelle des uploads pour plus de fiabilité
+- Optimisation de la récupération des mixes depuis Cloudinary
+- Simplification de l'architecture de gestion des fichiers audio

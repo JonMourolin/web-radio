@@ -19,10 +19,10 @@ export default function LongMixsPage() {
   // Récupérer les mixs depuis l'API
   const fetchMixs = async () => {
     try {
-      const response = await fetch('/api/longmixs');
+      const response = await fetch('/api/get-longmixs');
       if (response.ok) {
         const data = await response.json();
-        setMixs(data);
+        setMixs(data.resources);
       }
     } catch (error) {
       console.error('Failed to fetch mixs:', error);
